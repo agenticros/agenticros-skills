@@ -27,6 +27,7 @@ Full contract and types: **[AgenticROS → docs/skills.md](https://github.com/ag
 | Skill | Description |
 |-------|-------------|
 | **[Follow Me](https://github.com/agenticros/agenticros-skill-followme)** | Robot follows the user using depth (and optionally Ollama/VLM). Publishes `cmd_vel`, keeps a target distance, and can search when the person leaves view. Tools: `follow_robot`, `follow_me_see`, `ollama_status`. |
+| **[Find Object](https://github.com/agenticros/agenticros-skill-find)** | Robot rotates in place until it sees a target object (any COCO class — bottle, cup, vase, chair, cell phone, etc.) using YOLOv8n on the camera feed, then stops. Tools: `find_object`. |
 
 *More skills will be listed here as they are submitted and accepted.*
 
