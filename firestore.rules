@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    function isMaintainer(slug) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/skills/$(slug))
+        && get(/databases/$(database)/documents/skills/$(slug)).data.maintainerUid == request.auth.uid;
+    }
+
+    // Server-controlled fields that clients may never write directly.
+    // Cloud Functions (Admin SDK) bypass these rules.
+    function noServerFieldsTouched() {
+      let serverFields = ['starCount', 'viewCount', 'tools', 'capabilities',
+                          'repoOwnerVerified', 'createdAt', 'lastSyncedAt',
+                          'readmeMarkdown', 'maintainerUid', 'maintainerLogin',
+                          'maintainerAvatarUrl', 'packageName', 'skillId',
+                          'version'];
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(serverFields);
+    }
+
+    // ------------------------------------------------------------------
+    // skills/ — public read; create via Function only (admin SDK);
+    // limited self-service updates by the maintainer for tags/description.
+    // ------------------------------------------------------------------
+    match /skills/{slug} {
+      allow read: if true;
+
+      // All creates flow through the submitSkill Cloud Function (admin SDK).
+      // Browser clients cannot create skills directly.
+      allow create: if false;
+
+      // Maintainer (or admin) may patch their own skill, but the server-
+      // controlled fields (starCount, repoOwnerVerified, etc.) are off-limits.
+      allow update: if (isMaintainer(slug) || isAdmin())
+                    && noServerFieldsTouched();
+
+      // Only the maintainer (or admin) may delete.
+      allow delete: if isMaintainer(slug) || isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // users/ — public profile (basic fields) readable by anyone;
+    // writable only by self via the onUserCreate trigger or profile edits.
+    // ------------------------------------------------------------------
+    match /users/{uid} {
+      allow read: if true;
+      // The onUserCreate Function creates the doc using admin SDK.
+      allow create: if false;
+      // Users may update their own non-admin profile fields.
+      allow update: if isSelf(uid)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'githubId', 'githubLogin']);
+      allow delete: if isSelf(uid) || isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // stars/ — Phase 2. Read public; create/delete only through Functions
+    // (so the starCount counter on skills/ stays consistent).
+    // ------------------------------------------------------------------
+    match /stars/{starId} {
+      allow read: if true;
+      allow create, delete, update: if false;
+    }
+  }
+}

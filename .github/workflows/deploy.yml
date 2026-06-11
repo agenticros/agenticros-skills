@@ -1,0 +1,53 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Avoid running two deploys at once if commits land in quick succession.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install SPA deps
+        run: npm ci
+
+      - name: Install Functions deps
+        run: npm ci
+        working-directory: functions
+
+      - name: Type-check SPA
+        run: npm run typecheck
+
+      - name: Type-check Functions
+        run: npm run typecheck
+        working-directory: functions
+
+      - name: Build SPA
+        run: npm run build
+
+      - name: Build Functions
+        run: npm run build
+        working-directory: functions
+
+      - name: Deploy to Firebase (hosting + functions + rules + indexes)
+        uses: w9jds/firebase-action@v14.10.1
+        with:
+          args: deploy --only hosting,functions,firestore:rules,firestore:indexes --project agenticros --non-interactive
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGENTICROS }}

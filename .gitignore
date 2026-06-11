@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+functions/node_modules/
+
+# Build outputs
+dist/
+functions/lib/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Firebase
+.firebase/
+firebase-debug.log
+ui-debug.log
+*.firebase.json.bak
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Misc
+*.local

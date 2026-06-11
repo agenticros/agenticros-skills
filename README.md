@@ -1,60 +1,79 @@
-# AgenticROS Skills
+# AgenticROS Skills Marketplace
 
-A curated list of **AgenticROS skills** — optional plugins that extend [AgenticROS](https://github.com/agenticros/agenticros) with new tools and behaviors so you can control and query your robot in natural language.
+The web app at **[skills.agenticros.com](https://skills.agenticros.com)** — discover, submit, and install [AgenticROS](https://github.com/agenticros/agenticros) skills for your robot.
 
-Use this repo to **discover skills** for your robot and to **submit your own** via pull request.
+This repo holds the React SPA and Firebase Cloud Functions that power the marketplace. The marketplace itself stores **metadata only** — every skill's source code lives on GitHub.
 
----
+## What is an AgenticROS skill?
 
-## What are AgenticROS skills?
+A skill is an npm package the [AgenticROS](https://github.com/agenticros/agenticros) plugin loads at startup. Each skill registers tools the AI agent can call (e.g. "follow me", "find object"), reads its config from `config.skills.<skillId>`, and uses the plugin context for ROS2 transport and depth sampling.
 
-[AgenticROS](https://github.com/agenticros/agenticros) connects ROS2 robots to AI agent platforms (e.g. OpenClaw). **Skills** are add-on packages that the AgenticROS plugin loads at startup. Each skill:
+See **[agenticros/docs/skills.md](https://github.com/agenticros/agenticros/blob/main/docs/skills.md)** for the skill contract.
 
-- **Registers tools** the agent can call (e.g. “follow me”, “what do you see?”).
-- **Reads config** from `config.skills.<skillId>` so you tune behavior without changing code.
-- **Uses the plugin context** for ROS2 transport, depth sampling, and logging.
+## Install a skill on your robot
 
-Skills make robots more capable without changing the core: follow a person, run vision models, trigger custom behaviors — all exposed as tools the user can invoke via chat or voice.
+```bash
+# Search the marketplace
+npx agenticros skills search follow
 
-**How they work:** You add a skill package to `skillPackages` (or a path to `skillPaths`) in your OpenClaw/AgenticROS config. After a gateway restart, the skill’s tools are available to the agent. Users say things like “follow me” or “start following”; the agent calls the right tool and the skill drives the robot (e.g. publishing `cmd_vel`, querying cameras, calling Ollama).
+# One-step install (clones, builds, registers, syncs)
+npx agenticros skills install followme
+```
 
-Full contract and types: **[AgenticROS → docs/skills.md](https://github.com/agenticros/agenticros)** (in the main repo).
-
----
-
-## Skills
-
-| Skill | Description |
-|-------|-------------|
-| **[Follow Me](https://github.com/agenticros/agenticros-skill-followme)** | Robot follows the user using depth (and optionally Ollama/VLM). Publishes `cmd_vel`, keeps a target distance, and can search when the person leaves view. Tools: `follow_robot`, `follow_me_see`, `ollama_status`. |
-| **[Find Object](https://github.com/agenticros/agenticros-skill-find)** | Robot rotates in place until it sees a target object (any COCO class — bottle, cup, vase, chair, cell phone, etc.) using YOLOv8n on the camera feed, then stops. Tools: `find_object`. |
-
-*More skills will be listed here as they are submitted and accepted.*
-
----
-
-## Discover skills
-
-- Browse the table above for skills that match your robot and use case.
-- Each link goes to the skill’s repo for install steps, config options, and usage.
-- Install by adding the package to `skillPackages` (or a path to `skillPaths`) in your AgenticROS/OpenClaw config under `plugins.entries.agenticros.config`, then restart the gateway.
-
----
+The CLI calls the public Skills API (`https://skills.agenticros.com/api/skills/:slug/install`), clones the skill's GitHub repo into a sibling of your AgenticROS checkout, runs `pnpm install && pnpm build`, registers the path with your OpenClaw config, and reminds you to restart the gateway.
 
 ## Submit a skill
 
-We welcome community skills. To add yours to the list:
+1. Sign in at **[skills.agenticros.com/login](https://skills.agenticros.com/login)** with GitHub.
+2. Paste your skill's GitHub repo URL into the Submit form.
+3. We fetch `package.json` from GitHub, validate the `agenticros` block, verify you have push access on the repo, then publish your listing.
 
-1. **Build a skill** that follows the [AgenticROS skill contract](https://github.com/agenticros/agenticros) (export `registerSkill(api, config, context)`, use `config.skills.<skillId>`, etc.). Use [agenticros-skill-followme](https://github.com/agenticros/agenticros-skill-followme) as a reference.
-2. **Open a pull request** in this repo that adds one row to the **Skills** table in this README with:
-   - **Skill**: Link to the skill’s repository (e.g. `[Follow Me](https://github.com/agenticros/agenticros-skill-followme)`).
-   - **Description**: One short sentence summarizing what the skill does and main tools (e.g. “Robot follows the user using depth…”).
+Your skill `package.json` must include:
 
-Keep descriptions concise so the table stays scannable. We may suggest small edits before merging.
+```jsonc
+{
+  "name": "agenticros-skill-<id>",
+  "main": "dist/index.js",
+  "repository": { "type": "git", "url": "https://github.com/<you>/<repo>.git" },
+  "agenticros": {
+    "id": "<id>",
+    "displayName": "Your Skill",
+    "description": "One-sentence summary.",
+    "categories": ["navigation", "vision"],
+    "screenshots": ["docs/screenshot.png"],
+    "capabilities": [
+      { "id": "do_thing", "verb": "do", "description": "..." }
+    ]
+  }
+}
+```
 
----
+Use **[agenticros-skill-followme](https://github.com/agenticros/agenticros-skill-followme)** as a reference.
 
-## Links
+## Develop locally
 
-- **[AgenticROS](https://github.com/agenticros/agenticros)** — Core platform and OpenClaw plugin
-- **[Follow Me skill (reference)](https://github.com/agenticros/agenticros-skill-followme)** — Example skill and template for building your own
+```bash
+npm install
+npm run dev          # SPA on http://localhost:5174
+
+# Cloud Functions + Firestore emulators
+cd functions && npm install && cd -
+npm run emulators
+
+# Deploy (requires Firebase auth + Blaze plan)
+npm run deploy
+```
+
+## Deployment
+
+- **Hosting**: Firebase Hosting on `skills.agenticros.com` (custom domain configured in Firebase Console)
+- **API**: Cloud Functions, reverse-proxied via `/api/**` rewrites
+- **DB**: Cloud Firestore (production mode, `nam5`)
+- **Auth**: Firebase Auth — GitHub OAuth provider only
+- **Analytics**: Google Analytics 4 (`G-ZD9TN0RXBT`)
+
+See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for first-time setup (GitHub OAuth App, custom domain DNS, Blaze plan, etc.).
+
+## License
+
+Apache-2.0

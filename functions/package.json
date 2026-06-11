@@ -1,0 +1,31 @@
+{
+  "name": "agenticros-skills-functions",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cloud Functions for the AgenticROS Skills marketplace.",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "cors": "^2.8.5",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.1.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "typescript": "~5.6.2"
+  }
+}

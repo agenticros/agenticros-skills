@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-deep: #050810;
+  --bg-surface: #0a0f1a;
+  --bg-elevated: #111827;
+  /* Primary: Electric Teal */
+  --coral-bright: #00D1B2;
+  --coral-mid: #00b89e;
+  --coral-dark: #008f7a;
+  /* Secondary: Cyan */
+  --cyan-bright: #00AEEF;
+  --cyan-mid: #0090c9;
+  /* Accent: Neon Green */
+  --accent-bright: #7CFF00;
+  --accent-mid: #6ae600;
+  --text-primary: #f0f4ff;
+  --text-secondary: #8892b0;
+  --text-muted: #5a6480;
+  --border-subtle: rgba(136, 146, 176, 0.15);
+  --surface-card: rgba(10, 15, 26, 0.65);
+  --surface-inset-highlight: rgba(255, 255, 255, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Satoshi", system-ui, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--accent-bright);
+  color: var(--bg-deep);
+}
+
+/* Markdown rendering inside skill detail pages */
+.markdown {
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  font-family: "Clash Display", system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 1.75em;
+  margin-bottom: 0.5em;
+}
+.markdown h1 {
+  font-size: 2rem;
+}
+.markdown h2 {
+  font-size: 1.5rem;
+}
+.markdown h3 {
+  font-size: 1.2rem;
+}
+.markdown p,
+.markdown ul,
+.markdown ol,
+.markdown blockquote {
+  margin-bottom: 1em;
+  color: var(--text-secondary);
+}
+.markdown ul,
+.markdown ol {
+  padding-left: 1.5em;
+}
+.markdown ul {
+  list-style: disc;
+}
+.markdown ol {
+  list-style: decimal;
+}
+.markdown a {
+  color: var(--cyan-bright);
+  text-decoration: none;
+}
+.markdown a:hover {
+  text-decoration: underline;
+}
+.markdown code {
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 0.9em;
+  color: var(--coral-bright);
+  background: var(--bg-elevated);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.markdown pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1em;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+.markdown pre code {
+  background: transparent;
+  color: var(--text-primary);
+  padding: 0;
+  font-size: 0.85em;
+}
+.markdown blockquote {
+  border-left: 3px solid var(--coral-bright);
+  padding-left: 1em;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.markdown table {
+  border-collapse: collapse;
+  margin-bottom: 1em;
+  width: 100%;
+}
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border-subtle);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.markdown th {
+  background: var(--bg-elevated);
+}
+.markdown img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+.markdown hr {
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+  margin: 2em 0;
+}
