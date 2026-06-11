@@ -28,5 +28,13 @@ ui-debug.log
 .env.local
 .env.*.local
 
+# Service-account / credential files — never commit.
+# Belt-and-suspenders guard in case a downloaded key lands in the repo.
+*firebase-adminsdk*.json
+*service-account*.json
+*serviceAccount*.json
+gcp-key*.json
+*-credentials.json
+
 # Misc
 *.local
