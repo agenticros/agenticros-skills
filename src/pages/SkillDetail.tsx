@@ -230,20 +230,13 @@ export default function SkillDetail() {
             ⟩ Preview
           </h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {skill.screenshots.map((path) => {
-              const url = resolveScreenshotUrl(skill.githubUrl, path);
-              return (
-                <a
-                  key={path}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="overflow-hidden rounded-xl border border-[var(--border-subtle)]"
-                >
-                  <img src={url} alt={path} className="w-full" />
-                </a>
-              );
-            })}
+            {skill.screenshots.map((path) => (
+              <ScreenshotTile
+                key={path}
+                url={resolveScreenshotUrl(skill.githubUrl, path)}
+                alt={path}
+              />
+            ))}
           </div>
         </section>
       )}
@@ -268,4 +261,21 @@ function resolveScreenshotUrl(githubUrl: string, path: string): string {
   const m = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
   if (!m) return path;
   return `https://raw.githubusercontent.com/${m[1]}/${m[2]}/main/${path.replace(/^\/+/, "")}`;
+}
+
+// Hides itself if the image fails to load — avoids a broken-image icon when
+// a manifest references a screenshot path that doesn't exist in the repo.
+function ScreenshotTile({ url, alt }: { url: string; alt: string }) {
+  const [broken, setBroken] = useState(false);
+  if (broken) return null;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="overflow-hidden rounded-xl border border-[var(--border-subtle)]"
+    >
+      <img src={url} alt={alt} className="w-full" onError={() => setBroken(true)} />
+    </a>
+  );
 }
