@@ -66,16 +66,41 @@ The SPA's [`src/lib/firebase.ts`](./src/lib/firebase.ts) automatically connects 
 
 ## 5. Continuous deployment
 
-The repo ships a GitHub Actions workflow at [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) that runs on every push to `main`. It needs **one secret**:
+The repo ships a GitHub Actions workflow at [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) that runs on every push to `main` (and via "Run workflow" in the Actions tab). Setup is a one-time process with three pieces — a GitHub secret, GCP IAM grants, and one GCP API enable.
 
-- `FIREBASE_SERVICE_ACCOUNT_AGENTICROS` — the JSON contents of a service-account key with the `roles/firebasehosting.admin` + `roles/cloudfunctions.developer` + `roles/datastore.owner` IAM roles. Generate it from Firebase Console → Project Settings → Service accounts → "Generate new private key", then add it as a repository secret named exactly `FIREBASE_SERVICE_ACCOUNT_AGENTICROS`.
+### 5.1 Create the GitHub repo secret
 
-The workflow:
+1. In Firebase Console → ⚙️ Project Settings → **Service accounts** tab → click **Generate new private key**, confirm. A JSON file downloads (filename like `agenticros-firebase-adminsdk-XXXXX-XXXXXX.json`).
+2. In GitHub: repo Settings → Secrets and variables → Actions → **New repository secret**. Name it exactly `FIREBASE_SERVICE_ACCOUNT_AGENTICROS`, paste the entire JSON contents (from `{` to `}`) into the Value field, save.
+3. **Securely delete the downloaded JSON file** once it's saved as a secret. Anyone with that file can deploy to your project and read/write Firestore. If it leaks, rotate it under Firebase Console → Service accounts → Manage service-account permissions → delete the key.
 
-1. Installs SPA + Functions deps.
+### 5.2 Grant the service account IAM permissions
+
+The downloaded key represents the project's default Firebase Admin SDK service account (`firebase-adminsdk-<id>@<project>.iam.gserviceaccount.com`). It has Firebase-SDK-level permissions out of the box but **not** the Cloud-level permissions needed to deploy Functions, push Firestore rules, etc. You need to grant two things:
+
+1. **Project-level role `Editor` (`roles/editor`)** — covers Hosting deploy, Functions v2 deploy, Cloud Build, Cloud Run, Artifact Registry, Firestore rules, Firestore indexes, and Service Usage in one grant. This is what Firebase's own `firebase init hosting:github` flow grants its CI service accounts by default.
+   - In **Cloud Console → IAM** ([direct link](https://console.cloud.google.com/iam-admin/iam?project=agenticros)), find the `firebase-adminsdk-<id>@agenticros.iam.gserviceaccount.com` row → pencil icon → **Add another role** → search for `Editor` → save. Be careful to pick **Basic → Editor** (`roles/editor`), not "Service Account Editor" or similar.
+2. **`Service Account User` (`roles/iam.serviceAccountUser`) on the App Engine default service account** (`agenticros@appspot.gserviceaccount.com`) — Functions v2 runs under the App Engine SA's identity, so the deploy SA needs `iam.serviceAccounts.actAs` on it.
+   - In **Cloud Console → IAM & Admin → Service Accounts** ([direct link](https://console.cloud.google.com/iam-admin/serviceaccounts?project=agenticros)), click into **`agenticros@appspot.gserviceaccount.com`** → **Permissions** tab → **Grant access** → New principal: `firebase-adminsdk-<id>@agenticros.iam.gserviceaccount.com`, Role: **Service Account User** (be very careful here: "Service Account User" and "Service Account Admin" appear next to each other in the picker and are completely different — Admin does *not* grant `actAs`). Save.
+
+If you'd rather lock down permissions instead of granting `Editor`, the minimum-privilege equivalent is: `roles/firebasehosting.admin` + `roles/cloudfunctions.admin` + `roles/run.admin` + `roles/artifactregistry.admin` + `roles/cloudbuild.builds.editor` + `roles/firebaserules.admin` + `roles/datastore.indexAdmin` + `roles/serviceusage.serviceUsageConsumer`, plus the same `roles/iam.serviceAccountUser` on the App Engine SA.
+
+### 5.3 Enable the Cloud Billing API
+
+Firebase verifies the project is on Blaze before deploying Functions, and that check goes through `cloudbilling.googleapis.com`. Enable it once:
+
+- In **Cloud Console → APIs & Services → Library** ([direct link](https://console.cloud.google.com/apis/library/cloudbilling.googleapis.com?project=agenticros)) → **Enable**. Takes a few seconds; no further config needed.
+
+> Note: a local `firebase deploy` from your dev machine works without this API because user-account credentials bypass the billing pre-check. The service-account-based CI deploy doesn't, which is why this is easy to miss.
+
+### 5.4 What the workflow does on each push
+
+1. Installs SPA + Functions deps (`npm ci`).
 2. Type-checks both.
-3. Builds the SPA.
-4. Runs `firebase deploy --only hosting,functions,firestore:rules,firestore:indexes` against the `agenticros` project.
+3. Builds the SPA (`vite build`) and Functions (`tsc`).
+4. Runs `firebase deploy --only hosting,functions,firestore:rules,firestore:indexes` against the `agenticros` project using the service-account key from the GitHub secret.
+
+A successful run takes ~2–3 minutes. Watch live progress at the [Actions tab](https://github.com/agenticros/agenticros-skills/actions/workflows/deploy.yml).
 
 ## 6. Seeding the marketplace
 
@@ -106,3 +131,8 @@ After the first deploy the marketplace is empty. To launch non-empty, submit the
 - **"Sign in with GitHub fails with auth/operation-not-supported-in-this-environment"** — the GitHub auth provider isn't enabled in Firebase Console (step 1.3).
 - **"submitSkill returns 'You must be a collaborator'"** — the signed-in GitHub account isn't a push/admin collab on the repo being submitted. Expected behavior.
 - **"Marketplace shows zero skills after a fresh deploy"** — that's normal. Sign in, open `/submit`, and submit the seed skills (followme + find).
+- **CI fails with "Either FIREBASE_TOKEN or GCP_SA_KEY or GOOGLE_APPLICATION_CREDENTIALS is required"** — the `FIREBASE_SERVICE_ACCOUNT_AGENTICROS` repo secret isn't set, or its value is empty. See §5.1.
+- **CI fails with "Missing permissions required for functions deploy. You must have permission `iam.serviceAccounts.ActAs` on service account `…@appspot.gserviceaccount.com`"** — the deploy SA hasn't been granted `Service Account User` (`roles/iam.serviceAccountUser`) on the App Engine default service account. See §5.2 step 2. Important: "Service Account **User**" and "Service Account **Admin**" look almost identical in the role picker but Admin does *not* grant `actAs` — only User does.
+- **CI fails with "Request to `firebaserules.googleapis.com/.../test` had HTTP Error: 403, The caller does not have permission"** — the deploy SA doesn't have project-level `Editor` (or the equivalent minimum-privilege role set). See §5.2 step 1.
+- **CI fails with "Cloud Billing API has not been used in project … before or it is disabled"** — `cloudbilling.googleapis.com` isn't enabled on the project. See §5.3. A local `firebase deploy` won't reproduce this because user credentials skip the billing precheck; only the SA-based CI deploy hits it.
+- **CI deploy ends with `Error: Functions successfully deployed but could not set up cleanup policy in location us-central1`** — non-fatal; just means no Artifact Registry cleanup policy exists yet. Run `firebase functions:artifacts:setpolicy --project agenticros --force` once locally to set a 1-day retention policy (prevents container images from accumulating storage cost). Subsequent CI runs will succeed cleanly.
