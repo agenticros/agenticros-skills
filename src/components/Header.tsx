@@ -14,10 +14,20 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] bg-bg-deep/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/agenticros.png" alt="AgenticROS" className="h-8 w-8" />
-          <span className="font-display text-xl font-semibold text-coral-bright">
-            AgenticROS Skills
+        <Link to="/" className="flex h-10 w-60 items-center gap-2" aria-label="AgenticROS Skills home">
+          <img
+            src="/agenticros-logo-only.png"
+            alt=""
+            aria-hidden="true"
+            className="h-10 w-10 object-cover object-center"
+          />
+          <img
+            src="/agenticros-text-only-white.png"
+            alt="AgenticROS"
+            className="h-5 min-w-0 flex-1 object-contain object-left"
+          />
+          <span className="shrink-0 text-sm font-semibold text-coral-bright">
+            Skills
           </span>
         </Link>
 

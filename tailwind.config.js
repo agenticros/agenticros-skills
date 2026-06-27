@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        "bg-deep": "#050810",
-        "bg-surface": "#0a0f1a",
-        "bg-elevated": "#111827",
+        "bg-deep": "#000000",
+        "bg-surface": "#05070d",
+        "bg-elevated": "#0d121d",
         /* Primary: Electric Teal */
         "coral-bright": "#00D1B2",
         "coral-mid": "#00b89e",

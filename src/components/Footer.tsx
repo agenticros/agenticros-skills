@@ -6,10 +6,20 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2">
-            <Link to="/" className="flex items-center gap-2">
-              <img src="/agenticros.png" alt="AgenticROS" className="h-7 w-7" />
-              <span className="font-display text-lg font-semibold text-coral-bright">
-                AgenticROS Skills
+            <Link to="/" className="flex h-10 max-w-60 items-center gap-2" aria-label="AgenticROS Skills home">
+              <img
+                src="/agenticros-logo-only.png"
+                alt=""
+                aria-hidden="true"
+                className="h-10 w-10 object-cover object-center"
+              />
+              <img
+                src="/agenticros-text-only-white.png"
+                alt="AgenticROS"
+                className="h-5 min-w-0 flex-1 object-contain object-left"
+              />
+              <span className="shrink-0 text-sm font-semibold text-coral-bright">
+                Skills
               </span>
             </Link>
             <p className="mt-3 max-w-md text-sm text-text-secondary">
@@ -80,7 +90,6 @@ export default function Footer() {
         </div>
         <div className="mt-10 flex flex-col items-start gap-2 border-t border-[var(--border-subtle)] pt-6 text-xs text-text-muted md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} AgenticROS. Apache-2.0 licensed.</p>
-          <p>Built by the community on top of Firebase + React.</p>
         </div>
       </div>
     </footer>

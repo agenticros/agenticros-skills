@@ -50,11 +50,21 @@ export default function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-[var(--border-subtle)] px-6 py-20 md:py-28">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
-          <img
-            src="/agenticros.png"
-            alt="AgenticROS"
-            className="h-24 w-24"
-          />
+          <div className="flex w-full max-w-[21rem] flex-col items-center md:max-w-[30rem]">
+            <img
+              src="/agenticros-logo-only-removebg-preview.png"
+              alt=""
+              aria-hidden="true"
+              className="w-36 object-contain md:w-44"
+            />
+            <div className="mt-2 h-11 w-full overflow-hidden md:h-12">
+              <img
+                src="/agenticros-text-removebg-preview.png"
+                alt="AgenticROS"
+                className="h-full w-full object-cover object-center"
+              />
+            </div>
+          </div>
           <h1 className="font-display text-4xl font-bold leading-tight text-text-primary md:text-6xl">
             Skills for your <span className="text-coral-bright">agentic robot</span>.
           </h1>

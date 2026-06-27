@@ -23,7 +23,7 @@ export default function Login() {
       <div className="rounded-2xl border border-[var(--border-subtle)] p-8 text-center"
         style={{ background: "var(--surface-card)" }}>
         <img
-          src="/agenticros.png"
+          src="/agenticros-logo-only-removebg-preview.png"
           alt="AgenticROS"
           className="mx-auto h-16 w-16"
         />
