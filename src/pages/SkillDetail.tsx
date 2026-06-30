@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getSkill, type SkillRecord } from "../lib/api";
+import { getSkill, skillRef, type SkillRecord } from "../lib/api";
 import InstallCommand from "../components/InstallCommand";
 import MarkdownReadme from "../components/MarkdownReadme";
 import StarButton from "../components/StarButton";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function SkillDetail() {
-  const { slug = "" } = useParams<{ slug: string }>();
+  const { owner = "", skill: skillName = "" } = useParams<{
+    owner: string;
+    skill: string;
+  }>();
+  const ref = `${owner}/${skillName}`;
   const { user } = useAuth();
   const [skill, setSkill] = useState<SkillRecord | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +21,7 @@ export default function SkillDetail() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    getSkill(slug)
+    getSkill(ref)
       .then((s) => {
         if (!cancelled) setSkill(s);
       })
@@ -30,7 +34,7 @@ export default function SkillDetail() {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [ref]);
 
   if (loading) {
     return (
@@ -60,10 +64,11 @@ export default function SkillDetail() {
   }
 
   const isMaintainer = !!user && user.uid === skill.maintainerUid;
+  const installRef = skillRef(skill);
+  const editPath = `/${owner}/${skillName}/edit`;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
-      {/* Hero */}
       <div className="flex flex-col gap-4">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -86,10 +91,8 @@ export default function SkillDetail() {
         <p className="text-lg text-text-secondary">{skill.description}</p>
 
         <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
-          <a
-            href={`https://github.com/${skill.maintainerLogin}`}
-            target="_blank"
-            rel="noreferrer"
+          <Link
+            to={`/${skill.maintainerLogin}`}
             className="flex items-center gap-2 hover:text-text-primary"
           >
             {skill.maintainerAvatarUrl && (
@@ -99,58 +102,37 @@ export default function SkillDetail() {
                 className="h-6 w-6 rounded-full"
               />
             )}
-            @{skill.maintainerLogin}
-          </a>
+            <span>@{skill.maintainerLogin}</span>
+          </Link>
           <span className="text-text-muted">·</span>
-          <a
-            href={skill.githubUrl}
-            target="_blank"
-            rel="noreferrer"
+          <Link
+            to={`/${skill.maintainerLogin}`}
             className="text-cyan-bright hover:underline"
           >
-            GitHub repo
-          </a>
-          {skill.homepage && (
-            <>
-              <span className="text-text-muted">·</span>
-              <a
-                href={skill.homepage}
-                target="_blank"
-                rel="noreferrer"
-                className="text-cyan-bright hover:underline"
-              >
-                Homepage
-              </a>
-            </>
-          )}
+            More from @{skill.maintainerLogin}
+          </Link>
           {skill.repoOwnerVerified && (
-            <>
-              <span className="text-text-muted">·</span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-accent-bright/30 bg-accent-bright/10 px-2 py-0.5 text-xs text-accent-bright">
-                ✓ verified maintainer
-              </span>
-            </>
+            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-400">
+              ✓ verified maintainer
+            </span>
           )}
           {isMaintainer && (
-            <>
-              <span className="text-text-muted">·</span>
-              <Link
-                to={`/s/${skill.slug}/edit`}
-                className="text-coral-bright hover:underline"
-              >
-                Edit skill
-              </Link>
-            </>
+            <Link
+              to={editPath}
+              className="ml-auto rounded-md border border-[var(--border-subtle)] px-3 py-1 text-xs hover:bg-bg-elevated"
+            >
+              Edit listing
+            </Link>
           )}
         </div>
 
         {skill.categories.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {skill.categories.map((c) => (
               <Link
                 key={c}
                 to={`/browse?category=${encodeURIComponent(c)}`}
-                className="rounded-full border border-[var(--border-subtle)] px-2.5 py-0.5 text-xs text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
+                className="rounded-full border border-[var(--border-subtle)] px-3 py-1 text-xs text-text-secondary hover:border-coral-bright/40"
               >
                 {c}
               </Link>
@@ -159,123 +141,59 @@ export default function SkillDetail() {
         )}
       </div>
 
-      {/* Install */}
-      <div className="mt-8 rounded-xl border border-[var(--border-subtle)] p-5"
-        style={{ background: "var(--surface-card)" }}>
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-text-primary">
-          Install on your robot
-        </h2>
-        <p className="mt-1 text-xs text-text-muted">
-          One command — clones, builds, and registers the skill with your AgenticROS gateway.
-        </p>
-        <div className="mt-3">
-          <InstallCommand slug={skill.slug} />
-        </div>
-        <p className="mt-2 text-xs text-text-muted">
-          Requires{" "}
-          <a
-            href="https://github.com/agenticros/agenticros"
-            className="text-cyan-bright hover:underline"
-          >
-            AgenticROS
-          </a>{" "}
-          to be installed locally. After install, restart your OpenClaw gateway to load
-          the skill.
-        </p>
-      </div>
-
-      {/* Capabilities */}
-      {skill.capabilities.length > 0 && (
-        <section className="mt-10">
-          <h2 className="font-display text-2xl font-semibold text-text-primary">
-            ⟩ Capabilities
-          </h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {skill.capabilities.map((cap) => (
-              <div
-                key={cap.id}
-                className="rounded-xl border border-[var(--border-subtle)] p-4"
-                style={{ background: "var(--surface-card)" }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-display text-base font-semibold text-coral-bright">
-                    {cap.verb}
-                  </h3>
-                  <span className="font-mono text-xs text-text-muted">{cap.id}</span>
-                </div>
-                <p className="mt-1 text-sm text-text-secondary">{cap.description}</p>
-                {cap.inputs && Object.keys(cap.inputs).length > 0 && (
-                  <div className="mt-2 text-xs text-text-muted">
-                    inputs:{" "}
-                    {Object.entries(cap.inputs).map(([k, t], i) => (
-                      <span key={k}>
-                        <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
-                          {k}: {t}
-                        </code>
-                        {i < Object.keys(cap.inputs!).length - 1 ? ", " : ""}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Screenshots */}
-      {skill.screenshots.length > 0 && (
-        <section className="mt-10">
-          <h2 className="font-display text-2xl font-semibold text-text-primary">
-            ⟩ Preview
-          </h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {skill.screenshots.map((path) => (
-              <ScreenshotTile
-                key={path}
-                url={resolveScreenshotUrl(skill.githubUrl, path)}
-                alt={path}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* README */}
       <section className="mt-10">
-        <h2 className="font-display text-2xl font-semibold text-text-primary">
-          ⟩ README
+        <h2 className="font-display text-sm uppercase tracking-wider text-text-muted">
+          ⟩ Install
         </h2>
-        <div className="mt-4 rounded-xl border border-[var(--border-subtle)] p-6"
-          style={{ background: "var(--surface-card)" }}>
-          <MarkdownReadme source={skill.readmeMarkdown} />
+        <div className="mt-3">
+          <InstallCommand slug={installRef} />
         </div>
       </section>
+
+      {skill.capabilities.length > 0 && (
+        <section className="mt-10">
+          <h2 className="font-display text-sm uppercase tracking-wider text-text-muted">
+            ⟩ Capabilities
+          </h2>
+          <ul className="mt-3 space-y-2">
+            {skill.capabilities.map((cap) => (
+              <li
+                key={cap.id}
+                className="rounded-lg border border-[var(--border-subtle)] p-4"
+              >
+                <span className="font-mono text-sm text-coral-bright">{cap.verb}</span>
+                <span className="mx-2 text-text-muted">—</span>
+                <span className="text-sm text-text-secondary">{cap.description}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {skill.readmeMarkdown && (
+        <section className="mt-10">
+          <h2 className="font-display text-sm uppercase tracking-wider text-text-muted">
+            ⟩ README
+          </h2>
+          <div className="mt-4 prose prose-invert max-w-none">
+            <MarkdownReadme source={skill.readmeMarkdown} />
+          </div>
+        </section>
+      )}
+
+      <div className="mt-8 text-xs text-text-muted">
+        <a
+          href={skill.githubUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="hover:text-text-secondary"
+        >
+          View source on GitHub
+        </a>
+        {skill.visibility === "unlisted" && (
+          <span className="ml-3 rounded bg-bg-elevated px-2 py-0.5">Unlisted</span>
+        )}
+      </div>
     </div>
-  );
-}
-
-function resolveScreenshotUrl(githubUrl: string, path: string): string {
-  if (/^https?:\/\//i.test(path)) return path;
-  // Convert github.com/owner/repo -> raw.githubusercontent.com/owner/repo/main
-  const m = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
-  if (!m) return path;
-  return `https://raw.githubusercontent.com/${m[1]}/${m[2]}/main/${path.replace(/^\/+/, "")}`;
-}
-
-// Hides itself if the image fails to load — avoids a broken-image icon when
-// a manifest references a screenshot path that doesn't exist in the repo.
-function ScreenshotTile({ url, alt }: { url: string; alt: string }) {
-  const [broken, setBroken] = useState(false);
-  if (broken) return null;
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      className="overflow-hidden rounded-xl border border-[var(--border-subtle)]"
-    >
-      <img src={url} alt={alt} className="w-full" onError={() => setBroken(true)} />
-    </a>
   );
 }

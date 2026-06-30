@@ -1,10 +1,5 @@
 /**
- * Callable Cloud Functions for skill submission and lifecycle:
- *   submitSkill, updateSkill, deleteSkill, refreshSkillMetadata.
- *
- * All run under the caller's auth + use the Admin SDK to bypass Firestore
- * security rules where appropriate (creates go through here because the
- * rules deny direct client writes — server validation is the gate).
+ * Callable Cloud Functions for skill submission and lifecycle.
  */
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
@@ -13,13 +8,13 @@ import {
   fetchPackageJson,
   fetchReadme,
   getRepo,
-  verifyOwnership,
 } from "./github";
-import {
-  manifestRepoUrl,
-  validateManifest,
-} from "./util/manifest";
 import { parseGithubUrl } from "./util/slug";
+import { validateManifest } from "./util/manifest";
+import {
+  resolveSkillDoc,
+  submitSkillFromGithub,
+} from "./util/submit";
 
 interface AuthedUser {
   uid: string;
@@ -45,10 +40,6 @@ function maintainerInfo(auth: AuthedUser): {
   return { uid: auth.uid, login, avatarUrl };
 }
 
-// ---------------------------------------------------------------------------
-// submitSkill
-// ---------------------------------------------------------------------------
-
 export const submitSkill = onCall<{
   githubUrl: string;
   githubAccessToken: string;
@@ -65,121 +56,49 @@ export const submitSkill = onCall<{
     );
   }
 
-  const parsed = parseGithubUrl(githubUrl);
-  if (!parsed) {
-    throw new HttpsError(
-      "invalid-argument",
-      "URL must look like https://github.com/<owner>/<repo>.",
-    );
-  }
-  const { owner, repo } = parsed;
-
-  // 1) Verify the caller has push/admin on the repo.
-  let ownership;
-  try {
-    ownership = await verifyOwnership(owner, repo, githubAccessToken);
-  } catch (err) {
-    throw new HttpsError(
-      "permission-denied",
-      (err as Error).message || "Couldn't verify repo ownership.",
-    );
-  }
-  if (!ownership.hasPushAccess) {
-    throw new HttpsError(
-      "permission-denied",
-      `You must be a collaborator (push or admin) on ${owner}/${repo} to submit it. ` +
-        "Fork the repo or ask the owner to add you.",
-    );
-  }
-
-  // 2) Fetch the repo + default branch.
-  const ghRepo = await getRepo(owner, repo, githubAccessToken);
-  const ref = ghRepo.default_branch;
-
-  // 3) Fetch and validate package.json.
-  const pkg = await fetchPackageJson(owner, repo, ref, githubAccessToken);
-  const { manifest, block, warnings } = validateManifest(pkg);
-
-  // 4) Fetch README.
-  const readme = await fetchReadme(owner, repo, ref, githubAccessToken);
-
-  // 5) Build the Firestore record. Slug is the agenticros.id (already validated).
-  const slug = block.id;
-  const ref0 = await db.collection("skills").doc(slug).get();
-  if (ref0.exists) {
-    const existing = ref0.data() as { maintainerUid?: string };
-    if (existing.maintainerUid && existing.maintainerUid !== auth.uid) {
-      throw new HttpsError(
-        "already-exists",
-        `A skill with id "${slug}" is already registered by another maintainer.`,
-      );
-    }
-  }
-
   const me = maintainerInfo(auth);
-  const now = FieldValue.serverTimestamp();
-  const githubUrlNormalized = `https://github.com/${owner}/${repo}`;
-  const declaredRepoUrl = manifestRepoUrl(manifest);
-
-  const record = {
-    slug,
-    packageName: manifest.name,
-    skillId: block.id,
-    name: manifest.name,
-    displayName: block.displayName ?? manifest.name,
-    description: block.description ?? manifest.description ?? "",
-    version: manifest.version,
-    githubUrl: githubUrlNormalized,
-    homepage: manifest.homepage ?? null,
-    bugs:
-      typeof manifest.bugs === "string"
-        ? manifest.bugs
-        : manifest.bugs?.url ?? null,
-    keywords: Array.isArray(manifest.keywords) ? manifest.keywords : [],
-    categories: block.categories ?? [],
-    screenshots: block.screenshots ?? [],
-    demoVideoUrl: block.demoVideoUrl ?? null,
-    capabilities: block.capabilities ?? [],
-    tools: [],
-    maintainerUid: me.uid,
-    maintainerLogin: ownership.viewerLogin || me.login,
-    maintainerAvatarUrl: me.avatarUrl,
-    repoOwnerVerified: true,
-    starCount: ref0.exists ? (ref0.data() as { starCount?: number }).starCount ?? 0 : 0,
-    viewCount: ref0.exists ? (ref0.data() as { viewCount?: number }).viewCount ?? 0 : 0,
-    readmeMarkdown: readme,
-    declaredRepoUrl,
-    warnings,
-    createdAt: ref0.exists ? ref0.data()?.createdAt ?? now : now,
-    updatedAt: now,
-    lastSyncedAt: now,
-    defaultBranch: ref,
-  };
-
-  await db.collection("skills").doc(slug).set(record, { merge: true });
-  logger.info("submitSkill ok", { slug, owner, repo, uid: auth.uid });
-
-  return { slug, warnings };
+  try {
+    const result = await submitSkillFromGithub({
+      githubUrl,
+      githubAccessToken,
+      maintainerUid: auth.uid,
+      maintainerLogin: me.login,
+      maintainerAvatarUrl: me.avatarUrl,
+    });
+    logger.info("submitSkill ok", { ref: result.marketplaceRef, uid: auth.uid });
+    return {
+      slug: result.skillSlug,
+      marketplaceRef: result.marketplaceRef,
+      visibility: result.visibility,
+      warnings: result.warnings,
+    };
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg.includes("Rate limit")) {
+      throw new HttpsError("resource-exhausted", msg);
+    }
+    if (msg.includes("already registered")) {
+      throw new HttpsError("already-exists", msg);
+    }
+    throw new HttpsError("invalid-argument", msg);
+  }
 });
-
-// ---------------------------------------------------------------------------
-// updateSkill — limited self-service patch for marketplace-only fields.
-// (Everything code-derived comes from refreshSkillMetadata.)
-// ---------------------------------------------------------------------------
 
 export const updateSkill = onCall<{
   slug: string;
+  marketplaceRef?: string;
   description?: string;
   categories?: string[];
   screenshots?: string[];
   demoVideoUrl?: string;
 }>(async (request) => {
   const auth = requireAuth(request.auth);
-  const { slug, ...patch } = request.data ?? {};
-  if (!slug) throw new HttpsError("invalid-argument", "Missing slug.");
-  const doc = await db.collection("skills").doc(slug).get();
-  if (!doc.exists) throw new HttpsError("not-found", "Skill not found.");
-  const data = doc.data() as { maintainerUid?: string };
+  const { slug, marketplaceRef, ...patch } = request.data ?? {};
+  const ref = marketplaceRef ?? slug;
+  if (!ref) throw new HttpsError("invalid-argument", "Missing slug or marketplaceRef.");
+  const resolved = await resolveSkillDoc(ref);
+  if (!resolved) throw new HttpsError("not-found", "Skill not found.");
+  const data = resolved.data as { maintainerUid?: string };
   if (data.maintainerUid !== auth.uid) {
     throw new HttpsError("permission-denied", "Only the maintainer may edit this skill.");
   }
@@ -189,42 +108,39 @@ export const updateSkill = onCall<{
   if (Array.isArray(patch.screenshots)) allowed.screenshots = patch.screenshots;
   if (typeof patch.demoVideoUrl === "string") allowed.demoVideoUrl = patch.demoVideoUrl;
   allowed.updatedAt = FieldValue.serverTimestamp();
-  await db.collection("skills").doc(slug).set(allowed, { merge: true });
+  await db.collection("skills").doc(resolved.docId).set(allowed, { merge: true });
   return { ok: true };
 });
 
-// ---------------------------------------------------------------------------
-// deleteSkill
-// ---------------------------------------------------------------------------
-
-export const deleteSkill = onCall<{ slug: string }>(async (request) => {
-  const auth = requireAuth(request.auth);
-  const { slug } = request.data ?? {};
-  if (!slug) throw new HttpsError("invalid-argument", "Missing slug.");
-  const doc = await db.collection("skills").doc(slug).get();
-  if (!doc.exists) throw new HttpsError("not-found", "Skill not found.");
-  const data = doc.data() as { maintainerUid?: string };
-  if (data.maintainerUid !== auth.uid) {
-    throw new HttpsError("permission-denied", "Only the maintainer may delete this skill.");
-  }
-  await db.collection("skills").doc(slug).delete();
-  return { ok: true };
-});
-
-// ---------------------------------------------------------------------------
-// refreshSkillMetadata — re-pull package.json + README from GitHub.
-// ---------------------------------------------------------------------------
+export const deleteSkill = onCall<{ slug: string; marketplaceRef?: string }>(
+  async (request) => {
+    const auth = requireAuth(request.auth);
+    const { slug, marketplaceRef } = request.data ?? {};
+    const ref = marketplaceRef ?? slug;
+    if (!ref) throw new HttpsError("invalid-argument", "Missing slug.");
+    const resolved = await resolveSkillDoc(ref);
+    if (!resolved) throw new HttpsError("not-found", "Skill not found.");
+    const data = resolved.data as { maintainerUid?: string };
+    if (data.maintainerUid !== auth.uid) {
+      throw new HttpsError("permission-denied", "Only the maintainer may delete this skill.");
+    }
+    await db.collection("skills").doc(resolved.docId).delete();
+    return { ok: true };
+  },
+);
 
 export const refreshSkillMetadata = onCall<{
   slug: string;
+  marketplaceRef?: string;
   githubAccessToken?: string;
 }>(async (request) => {
   const auth = requireAuth(request.auth);
-  const { slug, githubAccessToken } = request.data ?? {};
-  if (!slug) throw new HttpsError("invalid-argument", "Missing slug.");
-  const ref = await db.collection("skills").doc(slug).get();
-  if (!ref.exists) throw new HttpsError("not-found", "Skill not found.");
-  const existing = ref.data() as {
+  const { slug, marketplaceRef, githubAccessToken } = request.data ?? {};
+  const ref = marketplaceRef ?? slug;
+  if (!ref) throw new HttpsError("invalid-argument", "Missing slug.");
+  const resolved = await resolveSkillDoc(ref);
+  if (!resolved) throw new HttpsError("not-found", "Skill not found.");
+  const existing = resolved.data as {
     maintainerUid?: string;
     githubUrl?: string;
     defaultBranch?: string;
@@ -242,10 +158,11 @@ export const refreshSkillMetadata = onCall<{
   const { manifest, block, warnings } = validateManifest(pkg);
   const readme = await fetchReadme(parsed.owner, parsed.repo, branch, githubAccessToken);
 
-  await db.collection("skills").doc(slug).set(
+  await db.collection("skills").doc(resolved.docId).set(
     {
       packageName: manifest.name,
       skillId: block.id,
+      skillSlug: block.id,
       displayName: block.displayName ?? manifest.name,
       description: block.description ?? manifest.description ?? "",
       version: manifest.version,
@@ -253,6 +170,7 @@ export const refreshSkillMetadata = onCall<{
       screenshots: block.screenshots ?? [],
       demoVideoUrl: block.demoVideoUrl ?? null,
       capabilities: block.capabilities ?? [],
+      tutorial: block.tutorial === true,
       keywords: Array.isArray(manifest.keywords) ? manifest.keywords : [],
       homepage: manifest.homepage ?? null,
       readmeMarkdown: readme,

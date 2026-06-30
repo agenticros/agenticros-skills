@@ -11,7 +11,11 @@ import {
 import { getGithubAccessToken } from "../lib/githubToken";
 
 export default function EditSkill() {
-  const { slug = "" } = useParams<{ slug: string }>();
+  const { owner = "", skill: skillName = "" } = useParams<{
+    owner: string;
+    skill: string;
+  }>();
+  const ref = `${owner}/${skillName}`;
   const { user, loading: authLoading, signIn } = useAuth();
   const navigate = useNavigate();
   const [skill, setSkill] = useState<SkillRecord | null>(null);
@@ -27,7 +31,7 @@ export default function EditSkill() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getSkill(slug)
+    getSkill(ref)
       .then((s) => {
         if (cancelled) return;
         setSkill(s);
@@ -43,7 +47,7 @@ export default function EditSkill() {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [ref]);
 
   if (authLoading || loading) {
     return <div className="mx-auto max-w-2xl px-6 py-20 text-text-muted">Loading…</div>;
@@ -67,7 +71,7 @@ export default function EditSkill() {
       <div className="mx-auto max-w-2xl px-6 py-20">
         <p className="text-text-secondary">You're not the maintainer of this skill.</p>
         <Link
-          to={`/s/${skill.slug}`}
+          to={`/${owner}/${skillName}`}
           className="mt-2 inline-block text-cyan-bright hover:underline"
         >
           ← Back to skill page
@@ -76,6 +80,8 @@ export default function EditSkill() {
     );
   }
 
+  const currentSkill = skill;
+
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -83,7 +89,8 @@ export default function EditSkill() {
     setStatus(null);
     try {
       await updateSkillCallable({
-        slug,
+        slug: currentSkill.slug,
+        marketplaceRef: ref,
         description: description.trim(),
         categories: categories
           .split(",")
@@ -119,9 +126,13 @@ export default function EditSkill() {
       }
     }
     try {
-      await refreshSkillMetadataCallable({ slug, githubAccessToken: token ?? undefined });
+      await refreshSkillMetadataCallable({
+        slug: currentSkill.slug,
+        marketplaceRef: ref,
+        githubAccessToken: token ?? undefined,
+      });
       setStatus("Resynced from GitHub. Reloading…");
-      setTimeout(() => navigate(`/s/${slug}`), 800);
+      setTimeout(() => navigate(`/${owner}/${skillName}`), 800);
     } catch (err) {
       setError((err as { message?: string }).message ?? "Resync failed.");
     } finally {
@@ -130,11 +141,11 @@ export default function EditSkill() {
   }
 
   async function handleDelete() {
-    if (!confirm(`Delete ${slug} from the marketplace? This cannot be undone.`)) return;
+    if (!confirm(`Delete ${ref} from the marketplace? This cannot be undone.`)) return;
     setBusy(true);
     setError(null);
     try {
-      await deleteSkillCallable({ slug });
+      await deleteSkillCallable({ slug: currentSkill.slug, marketplaceRef: ref });
       navigate("/my-skills");
     } catch (err) {
       setError((err as { message?: string }).message ?? "Delete failed.");
@@ -145,7 +156,7 @@ export default function EditSkill() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
       <Link
-        to={`/s/${slug}`}
+        to={`/${owner}/${skillName}`}
         className="text-xs text-text-muted hover:text-text-secondary"
       >
         ← Back to skill page

@@ -23,6 +23,11 @@ export interface Capability {
 
 export interface SkillRecord {
   slug: string;
+  marketplaceRef?: string;
+  ownerLogin?: string;
+  skillSlug?: string;
+  legacySlug?: string;
+  visibility?: string;
   packageName: string;
   skillId: string;
   name: string;
@@ -52,6 +57,7 @@ export interface SkillRecord {
 
 export interface InstallDescriptor {
   slug: string;
+  marketplaceRef?: string;
   skillId: string;
   packageName: string;
   githubUrl: string;
@@ -63,12 +69,13 @@ export interface InstallDescriptor {
 
 export const submitSkillCallable = httpsCallable<
   { githubUrl: string; githubAccessToken: string },
-  { slug: string }
+  { slug: string; marketplaceRef?: string; visibility?: string; warnings?: string[] }
 >(functions, "submitSkill");
 
 export const updateSkillCallable = httpsCallable<
   {
     slug: string;
+    marketplaceRef?: string;
     description?: string;
     categories?: string[];
     screenshots?: string[];
@@ -77,13 +84,13 @@ export const updateSkillCallable = httpsCallable<
   { ok: boolean }
 >(functions, "updateSkill");
 
-export const deleteSkillCallable = httpsCallable<{ slug: string }, { ok: boolean }>(
-  functions,
-  "deleteSkill",
-);
+export const deleteSkillCallable = httpsCallable<
+  { slug: string; marketplaceRef?: string },
+  { ok: boolean }
+>(functions, "deleteSkill");
 
 export const refreshSkillMetadataCallable = httpsCallable<
-  { slug: string; githubAccessToken?: string },
+  { slug: string; marketplaceRef?: string; githubAccessToken?: string },
   { ok: boolean }
 >(functions, "refreshSkillMetadata");
 
@@ -105,12 +112,14 @@ const API_BASE =
 export async function listSkills(params: {
   q?: string;
   category?: string;
+  owner?: string;
   sort?: "recent" | "popular";
   limit?: number;
 } = {}): Promise<SkillRecord[]> {
   const u = new URL(`${apiOrigin()}/skills`, window.location.origin);
   if (params.q) u.searchParams.set("q", params.q);
   if (params.category) u.searchParams.set("category", params.category);
+  if (params.owner) u.searchParams.set("owner", params.owner);
   if (params.sort) u.searchParams.set("sort", params.sort);
   if (params.limit) u.searchParams.set("limit", String(params.limit));
   const r = await fetch(u.toString());
@@ -119,17 +128,34 @@ export async function listSkills(params: {
   return body.skills as SkillRecord[];
 }
 
-export async function getSkill(slug: string): Promise<SkillRecord> {
-  const r = await fetch(`${apiOrigin()}/skills/${encodeURIComponent(slug)}`);
-  if (r.status === 404) throw new Error("Skill not found");
-  if (!r.ok) throw new Error(`Failed to fetch skill: ${r.status}`);
-  return (await r.json()) as SkillRecord;
+export function skillRef(skill: SkillRecord): string {
+  return skill.marketplaceRef ?? skill.slug;
 }
 
-export async function getInstallDescriptor(slug: string): Promise<InstallDescriptor> {
-  const r = await fetch(
-    `${apiOrigin()}/skills/${encodeURIComponent(slug)}/install`,
-  );
+export function skillPath(ref: string): string {
+  if (ref.includes("/")) return `/${ref}`;
+  return `/s/${ref}`;
+}
+
+export async function getSkill(ref: string): Promise<SkillRecord> {
+  const path = ref.includes("/")
+    ? `/skills/${ref.split("/").map(encodeURIComponent).join("/")}`
+    : `/skills/${encodeURIComponent(ref)}`;
+  const r = await fetch(`${apiOrigin()}${path}`);
+  if (r.status === 404) throw new Error("Skill not found");
+  if (!r.ok) throw new Error(`Failed to fetch skill: ${r.status}`);
+  const body = (await r.json()) as SkillRecord & { redirect?: string };
+  if (body.redirect && !body.marketplaceRef) {
+    return getSkill(body.redirect);
+  }
+  return body;
+}
+
+export async function getInstallDescriptor(ref: string): Promise<InstallDescriptor> {
+  const path = ref.includes("/")
+    ? `/skills/${ref.split("/").map(encodeURIComponent).join("/")}/install`
+    : `/skills/${encodeURIComponent(ref)}/install`;
+  const r = await fetch(`${apiOrigin()}${path}`);
   if (!r.ok) throw new Error(`Failed to fetch install descriptor: ${r.status}`);
   return (await r.json()) as InstallDescriptor;
 }

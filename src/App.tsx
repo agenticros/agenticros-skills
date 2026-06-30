@@ -9,6 +9,8 @@ import EditSkill from "./pages/EditSkill";
 import MySkills from "./pages/MySkills";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import MaintainerProfile from "./pages/MaintainerProfile";
+import LegacySlugRedirect from "./pages/LegacySlugRedirect";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -19,12 +21,15 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/browse" element={<Browse />} />
-          <Route path="/s/:slug" element={<SkillDetail />} />
           <Route path="/submit" element={<Submit />} />
-          <Route path="/s/:slug/edit" element={<EditSkill />} />
           <Route path="/my-skills" element={<MySkills />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/s/:slug" element={<LegacySlugRedirect />} />
+          <Route path="/s/:slug/edit" element={<LegacySlugRedirect />} />
+          <Route path="/:owner/:skill/edit" element={<EditSkill />} />
+          <Route path="/:owner/:skill" element={<SkillDetail />} />
+          <Route path="/:owner" element={<MaintainerProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

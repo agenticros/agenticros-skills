@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { SkillRecord } from "../lib/api";
+import { skillPath, skillRef, type SkillRecord } from "../lib/api";
 import StarButton from "./StarButton";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 export default function SkillCard({ skill }: Props) {
   return (
     <Link
-      to={`/s/${skill.slug}`}
+      to={skillPath(skillRef(skill))}
       className="group flex flex-col gap-3 rounded-xl border border-[var(--border-subtle)] p-5 transition hover:border-coral-bright/50 hover:bg-bg-elevated/40"
       style={{ background: "var(--surface-card)" }}
     >

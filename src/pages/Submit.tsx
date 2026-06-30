@@ -62,9 +62,16 @@ export default function Submit() {
         githubUrl: url.trim(),
         githubAccessToken: token,
       });
-      const data = result.data as { slug: string; warnings?: string[] };
+      const data = result.data as {
+        slug: string;
+        marketplaceRef?: string;
+        warnings?: string[];
+      };
       if (data.warnings) setWarnings(data.warnings);
-      navigate(`/s/${data.slug}`);
+      const dest = data.marketplaceRef
+        ? `/${data.marketplaceRef}`
+        : `/s/${data.slug}`;
+      navigate(dest);
     } catch (err) {
       const msg = (err as { message?: string }).message ?? "Submission failed.";
       setError(msg);

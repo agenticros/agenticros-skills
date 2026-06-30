@@ -5,6 +5,7 @@ export interface AgenticROSBlock {
   id: string;
   displayName?: string;
   description?: string;
+  tutorial?: boolean;
   categories?: string[];
   screenshots?: string[];
   demoVideoUrl?: string;
