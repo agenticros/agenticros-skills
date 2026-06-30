@@ -8,7 +8,7 @@ export default function Footer() {
           <div className="col-span-2">
             <Link to="/" className="flex h-10 max-w-60 items-center gap-2" aria-label="AgenticROS Skills home">
               <img
-                src="/agenticros-logo-only.png"
+                src="/agenticros-a.png"
                 alt=""
                 aria-hidden="true"
                 className="h-10 w-10 object-cover object-center"

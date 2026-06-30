@@ -52,7 +52,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
           <div className="flex w-full max-w-[21rem] flex-col items-center md:max-w-[30rem]">
             <img
-              src="/agenticros-logo-only-removebg-preview.png"
+              src="/agenticros-a.png"
               alt=""
               aria-hidden="true"
               className="w-36 object-contain md:w-44"
