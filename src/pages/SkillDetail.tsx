@@ -146,7 +146,7 @@ export default function SkillDetail() {
           ⟩ Install
         </h2>
         <div className="mt-3">
-          <InstallCommand slug={installRef} />
+          <InstallCommand marketplaceRef={installRef} />
         </div>
       </section>
 

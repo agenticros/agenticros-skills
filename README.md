@@ -17,12 +17,24 @@ See **[agenticros/docs/skills.md](https://github.com/agenticros/agenticros/blob/
 npx agenticros skills search follow
 
 # One-step install (clones, builds, registers, syncs)
-npx agenticros skills install followme
+npx agenticros skills install chrismatthieu/followme
 ```
 
-The CLI calls the public Skills API (`https://skills.agenticros.com/api/skills/:slug/install`), clones the skill's GitHub repo into a sibling of your AgenticROS checkout, runs `pnpm install && pnpm build`, registers the path with your OpenClaw config, and reminds you to restart the gateway.
+Skills use **namespaced refs** `owner/skill-id` (GitHub login + `agenticros.id`). Legacy flat slugs still resolve.
+
+The CLI calls the public Skills API (`https://skills.agenticros.com/api/skills/:owner/:skill/install`), clones the skill's GitHub repo into a sibling of your AgenticROS checkout, runs `pnpm install && pnpm build`, registers the path with your OpenClaw config, and reminds you to restart the gateway.
 
 ## Submit a skill
+
+**CLI (recommended):**
+
+```bash
+npx agenticros create-skill my-skill
+cd agenticros-skill-my-skill && npm install && npm run dev
+npx agenticros publish
+```
+
+**Web UI:**
 
 1. Sign in at **[skills.agenticros.com/login](https://skills.agenticros.com/login)** with GitHub.
 2. Paste your skill's GitHub repo URL into the Submit form.
@@ -48,7 +60,7 @@ Your skill `package.json` must include:
 }
 ```
 
-Use **[agenticros-skill-followme](https://github.com/agenticros/agenticros-skill-followme)** as a reference.
+Use **[agenticros-skill-followme](https://github.com/agenticros/agenticros-skill-followme)** as a reference ([chrismatthieu/followme](https://skills.agenticros.com/chrismatthieu/followme) on the marketplace).
 
 ## Develop locally
 

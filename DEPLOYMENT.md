@@ -121,7 +121,7 @@ After the first deploy the marketplace is empty. To launch non-empty, submit the
 4. **Sanity check the install flow** locally:
    ```bash
    AGENTICROS_SKILLS_API=https://skills.agenticros.com/api npx agenticros skills search follow
-   AGENTICROS_SKILLS_API=https://skills.agenticros.com/api npx agenticros skills install followme
+   AGENTICROS_SKILLS_API=https://skills.agenticros.com/api npx agenticros skills install chrismatthieu/followme
    ```
    (The env var is only needed if you want to point at a non-default marketplace. Production users don't set it.)
 

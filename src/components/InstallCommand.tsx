@@ -1,11 +1,11 @@
 import { useState } from "react";
 
 interface Props {
-  slug: string;
+  marketplaceRef: string;
 }
 
-export default function InstallCommand({ slug }: Props) {
-  const cmd = `npx agenticros skills install ${slug}`;
+export default function InstallCommand({ marketplaceRef }: Props) {
+  const cmd = `npx agenticros skills install ${marketplaceRef}`;
   const [copied, setCopied] = useState(false);
 
   async function copy() {
