@@ -86,11 +86,19 @@ export default function Submit() {
         ⟩ Submit a skill
       </h1>
       <p className="mt-2 text-text-secondary">
-        Paste the GitHub URL of your skill repo. We'll pull the{" "}
+        Prefer the CLI? Run{" "}
         <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
-          package.json
+          npx agenticros publish
         </code>{" "}
-        and README, verify you have push access, and publish it.
+        from your skill directory — it validates, pushes to GitHub, and submits here
+        automatically. Or paste your repo URL below.
+      </p>
+      <p className="mt-2 text-sm text-text-muted">
+        Published skills appear at{" "}
+        <code className="font-mono text-text-secondary">
+          skills.agenticros.com/&lt;github-handle&gt;/&lt;skill-id&gt;
+        </code>
+        .
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">

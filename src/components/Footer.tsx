@@ -23,9 +23,14 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-3 max-w-md text-sm text-text-secondary">
-              Discover, submit, and install skills for your agentic robot. Skills are
-              community-built npm packages that extend AgenticROS with new tools the AI
-              agent can call.
+              Discover, create, publish, and install skills for your agentic robot.
+              Use{" "}
+              <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
+                npx agenticros create-skill
+              </code>{" "}
+              to scaffold, or browse community packages with namespaced{" "}
+              <code className="font-mono text-text-secondary">owner/skill-id</code>{" "}
+              refs.
             </p>
           </div>
           <div>

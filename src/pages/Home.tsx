@@ -151,15 +151,38 @@ export default function Home() {
             Built a skill? Share it.
           </h2>
           <p className="max-w-2xl text-text-secondary">
-            Submit your GitHub repo to publish it on the marketplace. We verify ownership,
-            pull your README, and make it installable with one command.
+            Scaffold, test locally, and publish with the AgenticROS CLI — or submit
+            your GitHub repo here. Published skills use namespaced refs{" "}
+            <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
+              your-handle/skill-id
+            </code>{" "}
+            and install with one command.
           </p>
-          <Link
-            to="/submit"
-            className="mt-2 inline-flex items-center gap-2 rounded-lg bg-cyan-bright px-6 py-3 text-base font-medium text-white transition hover:bg-cyan-mid"
+          <pre
+            className="mt-2 w-full max-w-xl overflow-x-auto rounded-lg border border-[var(--border-subtle)] p-4 text-left font-mono text-sm text-text-primary"
+            style={{ background: "var(--surface-inset-highlight)" }}
           >
-            Submit a skill
-          </Link>
+            <code>{`npx agenticros create-skill my-skill
+cd agenticros-skill-my-skill && npm install && npm run dev
+npx agenticros publish`}</code>
+          </pre>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/submit"
+              className="inline-flex items-center gap-2 rounded-lg bg-cyan-bright px-6 py-3 text-base font-medium text-white transition hover:bg-cyan-mid"
+            >
+              Submit via web
+            </Link>
+            <a
+              href="https://github.com/agenticros/agenticros/blob/main/docs/skills.md"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center rounded-lg border border-[var(--border-subtle)] px-6 py-3 text-base font-medium text-text-primary transition hover:bg-bg-elevated"
+              style={{ background: "var(--surface-card)" }}
+            >
+              Skill contract guide
+            </a>
+          </div>
         </div>
       </section>
     </>
