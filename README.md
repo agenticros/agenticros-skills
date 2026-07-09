@@ -16,13 +16,18 @@ See **[agenticros/docs/skills.md](https://github.com/agenticros/agenticros/blob/
 # Search the marketplace
 npx agenticros skills search follow
 
-# One-step install (clones, builds, registers, syncs)
+# Prefer npm @agenticros/* when listed; else git clone + build.
+# Registers skillPaths/skillRefs, syncs contracts.tools, auto-restarts gateway.
+npx agenticros skills install @agenticros/followme
 npx agenticros skills install chrismatthieu/followme
+
+# Skip automatic OpenClaw gateway restart:
+npx agenticros skills install @agenticros/navigate-to --no-restart
 ```
 
-Skills use **namespaced refs** `owner/skill-id` (GitHub login + `agenticros.id`). Legacy flat slugs still resolve.
+Skills use **namespaced refs** `owner/skill-id` and/or scoped npm names `@agenticros/<slug>`. Legacy flat slugs still resolve.
 
-The CLI calls the public Skills API (`https://skills.agenticros.com/api/skills/:owner/:skill/install`), clones the skill's GitHub repo into a sibling of your AgenticROS checkout, runs `pnpm install && pnpm build`, registers the path with your OpenClaw config, and reminds you to restart the gateway.
+The CLI calls `https://skills.agenticros.com/api/skills/:owner/:skill/install`. When `npmPackage` is present it packs into `~/.agenticros/skills-cache/`; otherwise it clones GitHub and builds.
 
 ## Submit a skill
 
