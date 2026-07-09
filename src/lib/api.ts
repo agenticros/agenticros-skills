@@ -29,6 +29,8 @@ export interface SkillRecord {
   legacySlug?: string;
   visibility?: string;
   packageName: string;
+  npmPackage?: string | null;
+  npmVersion?: string | null;
   skillId: string;
   name: string;
   displayName: string;
