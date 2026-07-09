@@ -2,7 +2,7 @@ import { useState } from "react";
 
 interface Props {
   marketplaceRef: string;
-  /** Optional scoped npm package name, e.g. @agenticros-skills/navigate-to */
+  /** Optional scoped npm package name, e.g. @agenticros/navigate-to */
   npmPackage?: string;
 }
 
