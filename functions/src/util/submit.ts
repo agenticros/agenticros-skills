@@ -237,6 +237,10 @@ export async function submitSkillFromGithub(input: SubmitInput): Promise<SubmitR
     ownerLogin,
     marketplaceRef: mref,
     packageName: manifest.name,
+    npmPackage: typeof manifest.name === "string" && manifest.name.startsWith("@")
+      ? manifest.name
+      : null,
+    npmVersion: manifest.version ?? null,
     skillId: block.id,
     name: manifest.name,
     displayName: block.displayName ?? manifest.name,
@@ -307,6 +311,8 @@ export function serializeSkillDoc(
     displayName: d.displayName ?? d.name ?? docId,
     description: d.description ?? "",
     packageName: d.packageName ?? d.name ?? "",
+    npmPackage: d.npmPackage ?? (typeof d.packageName === "string" && String(d.packageName).startsWith("@") ? d.packageName : null),
+    npmVersion: d.npmVersion ?? d.version ?? null,
     skillId: d.skillId ?? d.skillSlug ?? docId,
     version: d.version ?? "0.0.0",
     githubUrl: d.githubUrl ?? "",

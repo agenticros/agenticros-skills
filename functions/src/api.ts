@@ -230,6 +230,16 @@ app.get("/skills/:owner/:skill/install", async (req, res) => {
       githubUrl: d.githubUrl,
       ref: d.defaultBranch ?? "main",
       buildCmd: "pnpm install && pnpm build",
+      ...(typeof d.npmPackage === "string" && d.npmPackage
+        ? { npmPackage: d.npmPackage }
+        : d.packageName && String(d.packageName).startsWith("@")
+          ? { npmPackage: d.packageName }
+          : {}),
+      ...(typeof d.npmVersion === "string" && d.npmVersion
+        ? { npmVersion: d.npmVersion }
+        : typeof d.version === "string" && d.version && String(d.packageName ?? "").startsWith("@")
+          ? { npmVersion: d.version }
+          : {}),
     });
   } catch (err) {
     console.error("GET install failed", err);

@@ -146,7 +146,17 @@ export default function SkillDetail() {
           ⟩ Install
         </h2>
         <div className="mt-3">
-          <InstallCommand marketplaceRef={installRef} />
+          <InstallCommand
+            marketplaceRef={installRef}
+            npmPackage={
+              typeof skill.npmPackage === "string"
+                ? skill.npmPackage
+                : typeof skill.packageName === "string" &&
+                    skill.packageName.startsWith("@")
+                  ? skill.packageName
+                  : undefined
+            }
+          />
         </div>
       </section>
 
