@@ -2,15 +2,25 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import {
   User,
   GithubAuthProvider,
+  getAdditionalUserInfo,
   onAuthStateChanged,
   signInWithPopup,
   signOut as fbSignOut,
 } from "firebase/auth";
-import { auth, githubProvider } from "../lib/firebase";
+import { collection, getDocs, limit, query, where } from "firebase/firestore";
+import { auth, db, githubProvider } from "../lib/firebase";
 import {
   setGithubAccessToken,
   clearGithubAccessToken,
+  getGithubAccessToken,
 } from "../lib/githubToken";
+import {
+  clearStoredGithubLogin,
+  fetchGithubLogin,
+  getStoredGithubLogin,
+  isValidGithubLogin,
+  setStoredGithubLogin,
+} from "../lib/githubLogin";
 
 interface AuthContextValue {
   user: User | null;
@@ -26,14 +36,40 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [githubLogin, setGithubLogin] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      if (!u) {
+        clearGithubAccessToken();
+        setGithubLogin(null);
+        setLoading(false);
+        return;
+      }
+
+      // Prefer a previously captured @login; never trust displayName.
+      const cached = getStoredGithubLogin(u.uid);
+      const fromEmail = extractGithubLoginFromEmail(u);
+      const initial = cached ?? fromEmail;
+      setGithubLogin(initial);
       setLoading(false);
-      if (!u) clearGithubAccessToken();
+
+      if (!initial) {
+        void resolveGithubLogin(u).then((login) => {
+          if (cancelled || !login) return;
+          setStoredGithubLogin(u.uid, login);
+          setGithubLogin(login);
+        });
+      }
     });
-    return unsub;
+
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, []);
 
   async function signIn(): Promise<User> {
@@ -42,15 +78,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (cred?.accessToken) {
       setGithubAccessToken(cred.accessToken);
     }
+
+    // Firebase exposes the GitHub @login only on the sign-in result.
+    const additional = getAdditionalUserInfo(result);
+    const username =
+      (typeof additional?.username === "string" && additional.username) ||
+      (cred?.accessToken ? await fetchGithubLogin(cred.accessToken) : null);
+
+    if (isValidGithubLogin(username)) {
+      setStoredGithubLogin(result.user.uid, username);
+      setGithubLogin(username);
+    } else {
+      const fallback = extractGithubLoginFromEmail(result.user);
+      setGithubLogin(fallback);
+    }
+
     return result.user;
   }
 
   async function signOut(): Promise<void> {
+    const uid = user?.uid;
     clearGithubAccessToken();
+    if (uid) clearStoredGithubLogin(uid);
+    setGithubLogin(null);
     await fbSignOut(auth);
   }
-
-  const githubLogin = extractGithubLogin(user);
 
   return (
     <AuthContext.Provider
@@ -68,29 +120,48 @@ export function useAuth(): AuthContextValue {
 }
 
 /**
- * Pull the GitHub username out of the Firebase user object.
- *
- * Firebase populates `providerData[].displayName` with the GitHub display
- * name (which may include spaces). The actual `@login` ships on the user's
- * additional info during sign-in, but Firebase doesn't persist it; we fall
- * back to parsing the photo URL (`avatars.githubusercontent.com/u/<id>?v=4`)
- * or the email local-part as a best-effort.
+ * Best-effort extract of GitHub @login from the noreply email Firebase stores.
+ * Does NOT fall back to displayName — that is often a real name with spaces.
  */
-function extractGithubLogin(user: User | null): string | null {
+function extractGithubLoginFromEmail(user: User | null): string | null {
   if (!user) return null;
   const githubProvider = user.providerData.find(
     (p) => p.providerId === "github.com",
   );
-  if (!githubProvider) return null;
-
-  // Best signal: the email local-part if email ends with @users.noreply.github.com
-  if (githubProvider.email?.endsWith("@users.noreply.github.com")) {
-    const local = githubProvider.email.split("@")[0];
-    // Format: <id>+<login> or just <login>
-    const plus = local.indexOf("+");
-    return plus >= 0 ? local.slice(plus + 1) : local;
+  if (!githubProvider?.email?.endsWith("@users.noreply.github.com")) {
+    return null;
   }
 
-  // Fallback: displayName (may have spaces; not ideal but usable)
-  return githubProvider.displayName ?? null;
+  const local = githubProvider.email.split("@")[0];
+  // Format: <id>+<login> or just <login>
+  const plus = local.indexOf("+");
+  const candidate = plus >= 0 ? local.slice(plus + 1) : local;
+  return isValidGithubLogin(candidate) ? candidate : null;
+}
+
+/**
+ * Recover @login for an already-signed-in session (Firebase does not persist it).
+ * Prefer GitHub API when we still have a session token; otherwise reuse the
+ * maintainerLogin from a skill this user already owns.
+ */
+async function resolveGithubLogin(user: User): Promise<string | null> {
+  const token = getGithubAccessToken();
+  if (token) {
+    const fromApi = await fetchGithubLogin(token);
+    if (fromApi) return fromApi;
+  }
+
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, "skills"),
+        where("maintainerUid", "==", user.uid),
+        limit(1),
+      ),
+    );
+    const login = snap.docs[0]?.data()?.maintainerLogin;
+    return isValidGithubLogin(login) ? login : null;
+  } catch {
+    return null;
+  }
 }

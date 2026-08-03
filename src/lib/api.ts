@@ -96,15 +96,15 @@ export const refreshSkillMetadataCallable = httpsCallable<
   { ok: boolean }
 >(functions, "refreshSkillMetadata");
 
-export const starSkillCallable = httpsCallable<{ slug: string }, { starred: boolean }>(
-  functions,
-  "starSkill",
-);
+export const starSkillCallable = httpsCallable<
+  { slug: string; marketplaceRef?: string },
+  { starred: boolean }
+>(functions, "starSkill");
 
-export const unstarSkillCallable = httpsCallable<{ slug: string }, { starred: boolean }>(
-  functions,
-  "unstarSkill",
-);
+export const unstarSkillCallable = httpsCallable<
+  { slug: string; marketplaceRef?: string },
+  { starred: boolean }
+>(functions, "unstarSkill");
 
 // --- Public REST endpoints -------------------------------------------------
 
@@ -132,6 +132,13 @@ export async function listSkills(params: {
 
 export function skillRef(skill: SkillRecord): string {
   return skill.marketplaceRef ?? skill.slug;
+}
+
+/** Firestore skills/{docId} for a marketplace ref (`owner/skill`) or legacy slug. */
+export function skillDocId(ref: string): string {
+  if (!ref.includes("/")) return ref;
+  const [owner, ...rest] = ref.split("/");
+  return `${owner.toLowerCase()}__${rest.join("/")}`;
 }
 
 export function skillPath(ref: string): string {

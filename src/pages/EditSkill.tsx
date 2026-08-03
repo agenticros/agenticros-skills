@@ -146,7 +146,7 @@ export default function EditSkill() {
     setError(null);
     try {
       await deleteSkillCallable({ slug: currentSkill.slug, marketplaceRef: ref });
-      navigate("/my-skills");
+      navigate(`/${owner}`);
     } catch (err) {
       setError((err as { message?: string }).message ?? "Delete failed.");
       setBusy(false);

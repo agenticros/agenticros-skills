@@ -1,17 +1,17 @@
 /**
  * Star / favorite button.
  *
- * - Anonymous users see the count + a non-interactive star.
- * - Signed-in users can toggle their star. Calls `starSkill` /
- *   `unstarSkill` Cloud Functions; both update `skills/<slug>.starCount`
- *   inside a transaction, so we just rely on the live Firestore stream
- *   for counter accuracy instead of doing optimistic updates by hand.
+ * - Anonymous users are sent to login on click.
+ * - Signed-in users toggle via `starSkill` / `unstarSkill` Cloud Functions,
+ *   which update `skills/<docId>.starCount` in a transaction. Local count
+ *   updates after a successful call.
  */
 import { MouseEvent, useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import {
+  skillDocId,
   starSkillCallable,
   unstarSkillCallable,
 } from "../lib/api";
@@ -19,16 +19,24 @@ import { useNavigate } from "react-router-dom";
 
 interface Props {
   slug: string;
+  marketplaceRef?: string;
   starCount: number;
   compact?: boolean;
 }
 
-export default function StarButton({ slug, starCount, compact = false }: Props) {
+export default function StarButton({
+  slug,
+  marketplaceRef,
+  starCount,
+  compact = false,
+}: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [starred, setStarred] = useState(false);
   const [busy, setBusy] = useState(false);
   const [count, setCount] = useState(starCount);
+  const ref = marketplaceRef ?? slug;
+  const docId = skillDocId(ref);
 
   useEffect(() => {
     setCount(starCount);
@@ -39,11 +47,11 @@ export default function StarButton({ slug, starCount, compact = false }: Props) 
       setStarred(false);
       return;
     }
-    const starId = `${user.uid}_${slug}`;
+    const starId = `${user.uid}_${docId}`;
     void getDoc(doc(db, "stars", starId)).then((snap) => {
       setStarred(snap.exists());
     });
-  }, [user, slug]);
+  }, [user, docId]);
 
   async function toggle(e: MouseEvent) {
     e.preventDefault();
@@ -55,11 +63,11 @@ export default function StarButton({ slug, starCount, compact = false }: Props) 
     setBusy(true);
     try {
       if (starred) {
-        await unstarSkillCallable({ slug });
+        await unstarSkillCallable({ slug, marketplaceRef });
         setStarred(false);
         setCount((n) => Math.max(0, n - 1));
       } else {
-        await starSkillCallable({ slug });
+        await starSkillCallable({ slug, marketplaceRef });
         setStarred(true);
         setCount((n) => n + 1);
       }

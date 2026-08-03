@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Footer() {
+  const { githubLogin } = useAuth();
+  const mySkillsPath = githubLogin ? `/${githubLogin}` : "/my-skills";
+
   return (
     <footer className="mt-20 border-t border-[var(--border-subtle)] bg-bg-surface/40 py-12">
       <div className="mx-auto max-w-7xl px-6">
@@ -49,7 +53,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/my-skills" className="hover:text-text-primary">
+                <Link to={mySkillsPath} className="hover:text-text-primary">
                   My skills
                 </Link>
               </li>

@@ -85,7 +85,11 @@ export default function SkillDetail() {
               {skill.packageName} · v{skill.version}
             </p>
           </div>
-          <StarButton slug={skill.slug} starCount={skill.starCount} />
+          <StarButton
+            slug={skill.slug}
+            marketplaceRef={skill.marketplaceRef}
+            starCount={skill.starCount}
+          />
         </div>
 
         <p className="text-lg text-text-secondary">{skill.description}</p>

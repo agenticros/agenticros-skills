@@ -22,7 +22,12 @@ export default function SkillCard({ skill }: Props) {
             {skill.packageName}
           </p>
         </div>
-        <StarButton slug={skill.slug} starCount={skill.starCount} compact />
+        <StarButton
+          slug={skill.slug}
+          marketplaceRef={skill.marketplaceRef}
+          starCount={skill.starCount}
+          compact
+        />
       </div>
 
       <p className="line-clamp-2 text-sm text-text-secondary">
