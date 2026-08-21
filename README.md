@@ -59,7 +59,7 @@ Your skill `package.json` must include:
     "categories": ["navigation", "vision"],
     "screenshots": ["docs/screenshot.png"],
     "capabilities": [
-      { "id": "do_thing", "verb": "do", "description": "..." }
+      { "id": "do_thing", "verb": "do", "description": "...", "requires": ["base", "camera"] }
     ]
   }
 }

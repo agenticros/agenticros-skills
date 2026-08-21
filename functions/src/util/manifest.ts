@@ -20,6 +20,10 @@ export interface Capability {
   outputs?: Record<string, string>;
   interruptible?: boolean;
   blocks_base?: boolean;
+  /** ALL-OF hardware features (frozen vocabulary). Unused names warn, never fail submit. */
+  requires?: string[];
+  /** Features the verb can use but does not require. Docs / listing only. */
+  optional?: string[];
 }
 
 export interface SkillManifest {
@@ -49,6 +53,22 @@ export class ManifestError extends Error {
     this.name = "ManifestError";
   }
 }
+
+/** Frozen hardware feature names from AgenticROS robot profiles. Warn-only. */
+const FEATURE_VOCABULARY = new Set([
+  "base",
+  "arm",
+  "gripper",
+  "camera",
+  "depth",
+  "lidar",
+  "imu",
+  "dock",
+  "display",
+  "audio",
+  "battery",
+  "estop",
+]);
 
 /**
  * Validate a parsed package.json conforms to the simplified
@@ -104,6 +124,17 @@ export function validateManifest(raw: unknown): ValidatedManifest {
     warnings.push(
       "Declare at least one capability in `agenticros.capabilities` so the agent planner can reason about your skill.",
     );
+  } else {
+    for (const cap of block.capabilities) {
+      const names = [...(cap.requires ?? []), ...(cap.optional ?? [])];
+      const unknown = names.filter((n) => n && !FEATURE_VOCABULARY.has(n));
+      if (unknown.length > 0) {
+        warnings.push(
+          `Capability "${cap.id}" names unknown hardware feature(s): ${unknown.join(", ")}. ` +
+            `Known: ${[...FEATURE_VOCABULARY].join(", ")}. Submit still succeeds.`,
+        );
+      }
+    }
   }
   if (!block.screenshots || block.screenshots.length === 0) {
     warnings.push(

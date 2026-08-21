@@ -19,6 +19,8 @@ export interface Capability {
   outputs?: Record<string, string>;
   interruptible?: boolean;
   blocks_base?: boolean;
+  requires?: string[];
+  optional?: string[];
 }
 
 export interface SkillRecord {

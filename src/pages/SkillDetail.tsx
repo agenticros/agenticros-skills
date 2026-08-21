@@ -178,6 +178,11 @@ export default function SkillDetail() {
                 <span className="font-mono text-sm text-coral-bright">{cap.verb}</span>
                 <span className="mx-2 text-text-muted">—</span>
                 <span className="text-sm text-text-secondary">{cap.description}</span>
+                {cap.requires && cap.requires.length > 0 && (
+                  <div className="mt-1 text-xs text-text-muted">
+                    Requires: {cap.requires.join(", ")}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
