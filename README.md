@@ -10,6 +10,8 @@ A skill is an npm package the [AgenticROS](https://github.com/agenticros/agentic
 
 See **[agenticros/docs/skills.md](https://github.com/agenticros/agenticros/blob/main/docs/skills.md)** for the skill contract.
 
+This marketplace lists **AgenticROS robot skills** only — npm packages with an `agenticros` block that install via `npx agenticros skills install`. Third-party [Agent Skills](https://agentskills.io/home) (`SKILL.md` catalogs) are not indexed here. For official maker catalogs (including NVIDIA) see **[skills.sh/official](https://www.skills.sh/official)**; for Jetson Device and BSP workflows see **[Jetson Agent Skills](https://www.jetson-ai-lab.com/tutorials/jetson-agent-skills/)**.
+
 ## Install a skill on your robot
 
 ```bash

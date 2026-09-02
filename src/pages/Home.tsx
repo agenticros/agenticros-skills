@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listSkills, type SkillRecord } from "../lib/api";
+import { AGENT_SKILLS_LINKS } from "../lib/agentSkillsLinks";
 import SearchBar from "../components/SearchBar";
 import SkillGrid from "../components/SkillGrid";
 
@@ -141,6 +142,42 @@ export default function Home() {
               emptyMessage="No recent submissions yet."
             />
           )}
+        </div>
+      </section>
+
+      {/* Third-party Agent Skills — outbound links only */}
+      <section className="border-t border-[var(--border-subtle)] px-6 py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="font-display text-2xl font-semibold text-text-primary">
+            ⟩ Third-party Agent Skills
+          </h2>
+          <p className="mt-2 text-sm text-text-secondary">
+            This marketplace lists AgenticROS robot skills you install with{" "}
+            <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
+              npx agenticros skills install
+            </code>
+            . Official Agent Skills catalogs (SKILL.md) live upstream — we link
+            to them, we do not index them here.
+          </p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+            {AGENT_SKILLS_LINKS.map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block h-full rounded-xl border border-[var(--border-subtle)] p-4 transition hover:border-cyan-bright/40 hover:bg-bg-elevated"
+                >
+                  <span className="font-display text-sm font-semibold text-cyan-bright">
+                    {item.label}
+                  </span>
+                  <span className="mt-1 block text-xs text-text-secondary">
+                    {item.detail}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

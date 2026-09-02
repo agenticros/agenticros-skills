@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { AGENT_SKILLS_LINKS } from "../lib/agentSkillsLinks";
 
 export default function Footer() {
   const { githubLogin } = useAuth();
@@ -8,7 +9,7 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-[var(--border-subtle)] bg-bg-surface/40 py-12">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-8 lg:grid-cols-5">
           <div className="col-span-2">
             <Link to="/" className="flex h-10 max-w-60 items-center gap-2" aria-label="AgenticROS Skills home">
               <img
@@ -94,6 +95,25 @@ export default function Footer() {
                   Skill contract
                 </a>
               </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-text-primary">
+              Agent Skills
+            </h4>
+            <ul className="mt-3 space-y-2 text-sm text-text-secondary">
+              {AGENT_SKILLS_LINKS.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-text-primary"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
