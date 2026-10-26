@@ -16,6 +16,7 @@ import {
   validateManifest,
   type AgenticROSBlock,
 } from "./manifest";
+import { capabilityIdsFrom, skillCapabilityIds } from "./capability-ids";
 import { parseGithubUrl } from "./slug";
 
 export interface SubmitInput {
@@ -257,6 +258,7 @@ export async function submitSkillFromGithub(input: SubmitInput): Promise<SubmitR
     screenshots: block.screenshots ?? [],
     demoVideoUrl: block.demoVideoUrl ?? null,
     capabilities: block.capabilities ?? [],
+    capabilityIds: capabilityIdsFrom(block.capabilities ?? []),
     tutorial: block.tutorial === true,
     templateFingerprint,
     visibility,
@@ -323,6 +325,7 @@ export function serializeSkillDoc(
     screenshots: d.screenshots ?? [],
     demoVideoUrl: d.demoVideoUrl ?? null,
     capabilities: d.capabilities ?? [],
+    capabilityIds: skillCapabilityIds(d),
     tools: d.tools ?? [],
     maintainerUid: d.maintainerUid ?? "",
     maintainerLogin: d.maintainerLogin ?? "",

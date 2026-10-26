@@ -11,10 +11,8 @@ import {
 } from "./github";
 import { parseGithubUrl } from "./util/slug";
 import { validateManifest } from "./util/manifest";
-import {
-  resolveSkillDoc,
-  submitSkillFromGithub,
-} from "./util/submit";
+import { capabilityIdsFrom } from "./util/capability-ids";
+import { resolveSkillDoc, submitSkillFromGithub } from "./util/submit";
 
 interface AuthedUser {
   uid: string;
@@ -170,6 +168,7 @@ export const refreshSkillMetadata = onCall<{
       screenshots: block.screenshots ?? [],
       demoVideoUrl: block.demoVideoUrl ?? null,
       capabilities: block.capabilities ?? [],
+      capabilityIds: capabilityIdsFrom(block.capabilities ?? []),
       tutorial: block.tutorial === true,
       keywords: Array.isArray(manifest.keywords) ? manifest.keywords : [],
       homepage: manifest.homepage ?? null,

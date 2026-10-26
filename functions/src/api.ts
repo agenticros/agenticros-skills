@@ -15,6 +15,7 @@ import {
   migrateLegacySkillDocs,
   isMigrateAdmin,
 } from "./util/submit";
+import { skillMatchesCapability } from "./util/capability-ids";
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -131,12 +132,43 @@ app.post("/admin/migrate-slugs", async (req, res) => {
 
 app.get("/skills", async (req, res) => {
   try {
+    const capability =
+      typeof req.query.capability === "string" ? req.query.capability.trim() : "";
     const q = typeof req.query.q === "string" ? req.query.q.toLowerCase() : "";
     const category = typeof req.query.category === "string" ? req.query.category : "";
     const owner = typeof req.query.owner === "string" ? req.query.owner.toLowerCase() : "";
     const sort = req.query.sort === "popular" ? "popular" : "recent";
     const limit = Math.min(Number(req.query.limit ?? 50) || 50, 100);
     const includeUnlisted = req.query.include === "unlisted";
+
+    if (capability) {
+      const indexed = await db
+        .collection("skills")
+        .where("capabilityIds", "array-contains", capability)
+        .limit(100)
+        .get();
+      const seen = new Set(indexed.docs.map((d) => d.id));
+      const rows = indexed.docs.map((d) => ({ id: d.id, data: d.data() }));
+      const all = await db.collection("skills").get();
+      for (const doc of all.docs) {
+        if (seen.has(doc.id)) continue;
+        const data = doc.data();
+        const ids = data.capabilityIds;
+        if (!Array.isArray(ids) || ids.length === 0) {
+          rows.push({ id: doc.id, data });
+        }
+      }
+      let skills = rows
+        .filter((row) => skillMatchesCapability(row.data, capability, includeUnlisted))
+        .map((row) => serializeSkillDoc(row.id, row.data));
+      if (owner) {
+        skills = skills.filter((s) => String(s.ownerLogin ?? "").toLowerCase() === owner);
+      }
+      skills.sort((a, b) => Number(b.starCount ?? 0) - Number(a.starCount ?? 0));
+      res.set("Cache-Control", "public, max-age=30, s-maxage=60");
+      res.json({ skills: skills.slice(0, limit) });
+      return;
+    }
 
     let query: FirebaseFirestore.Query = db.collection("skills");
     if (owner) query = query.where("ownerLogin", "==", owner);
