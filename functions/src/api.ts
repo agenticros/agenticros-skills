@@ -1,7 +1,7 @@
 /**
  * Public REST API ("api" function).
  *
- * Mounted under `https://skills.agenticros.com/api/**` via Firebase Hosting.
+ * Mounted under `https://skills.corebrum.com/api/**` via Firebase Hosting.
  */
 import { onRequest } from "firebase-functions/v2/https";
 import express from "express";
@@ -45,7 +45,7 @@ async function githubUserFromToken(token: string): Promise<{
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
-      "User-Agent": "agenticros-skills-marketplace",
+      "User-Agent": "corebrum-skills-marketplace",
     },
   });
   if (!r.ok) throw new Error("Invalid GitHub token.");

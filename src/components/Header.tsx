@@ -16,16 +16,16 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] bg-bg-deep/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link to="/" className="flex h-10 w-60 items-center gap-2" aria-label="AgenticROS Skills home">
+        <Link to="/" className="flex h-10 w-60 items-center gap-2" aria-label="Corebrum Skills home">
           <img
-            src="/agenticros-a.png"
+            src="/corebrum-icon.png"
             alt=""
             aria-hidden="true"
             className="h-10 w-10 object-cover object-center"
           />
           <img
-            src="/agenticros-text-only-white.png"
-            alt="AgenticROS"
+            src="/corebrum-logo.png"
+            alt="Corebrum Synapse"
             className="h-5 min-w-0 flex-1 object-contain object-left"
           />
           <span className="shrink-0 text-sm font-semibold text-coral-bright">
@@ -47,7 +47,7 @@ export default function Header() {
             Submit
           </Link>
           <a
-            href="https://github.com/agenticros/agenticros/blob/main/docs/skills.md"
+            href="https://github.com/Corebrum/corebrum-synapse/blob/main/docs/skills.md"
             target="_blank"
             rel="noreferrer"
             className="text-sm text-text-secondary transition hover:text-text-primary"

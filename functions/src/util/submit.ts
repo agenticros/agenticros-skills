@@ -14,7 +14,7 @@ import {
 import {
   manifestRepoUrl,
   validateManifest,
-  type AgenticROSBlock,
+  type SynapseBlock,
 } from "./manifest";
 import { capabilityIdsFrom, skillCapabilityIds } from "./capability-ids";
 import { parseGithubUrl } from "./slug";
@@ -127,7 +127,7 @@ async function maintainerFirstSubmitAgeDays(maintainerUid: string): Promise<numb
 }
 
 function computeVisibility(opts: {
-  block: AgenticROSBlock;
+  block: SynapseBlock;
   templateFingerprint: string | null;
   maintainerPublicCount: number;
   maintainerAgeDays: number | null;
@@ -342,8 +342,8 @@ export function serializeSkillDoc(
   };
 }
 
-const OFFICIAL_OWNER = "agenticros";
-const MIGRATE_ADMINS = new Set(["chrismatthieu", "agenticros"]);
+const OFFICIAL_OWNER = "Corebrum";
+const MIGRATE_ADMINS = new Set(["chrismatthieu", "Corebrum", "agenticros"]);
 
 /** One-time migration: flat skill doc ids → owner__skill namespaced docs. */
 export async function migrateLegacySkillDocs(): Promise<{

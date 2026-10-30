@@ -5,7 +5,7 @@
  * not persist the actual username (`login`). We capture it at sign-in and
  * stash it in localStorage keyed by Firebase uid.
  */
-const KEY_PREFIX = "agenticros:github-login:";
+const KEY_PREFIX = "synapse:github-login:";
 
 export function isValidGithubLogin(value: string | null | undefined): value is string {
   if (!value) return false;

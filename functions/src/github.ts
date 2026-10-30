@@ -14,7 +14,7 @@ function headers(token?: string): Record<string, string> {
   const h: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "agenticros-skills-marketplace",
+    "User-Agent": "corebrum-skills-marketplace",
   };
   if (token) h["Authorization"] = `Bearer ${token}`;
   return h;

@@ -88,7 +88,7 @@ export default function Submit() {
       <p className="mt-2 text-text-secondary">
         Prefer the CLI? Run{" "}
         <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
-          npx agenticros publish
+          npx @corebrum/synapse publish
         </code>{" "}
         from your skill directory — it validates, pushes to GitHub, and submits here
         automatically. Or paste your repo URL below.
@@ -96,7 +96,7 @@ export default function Submit() {
       <p className="mt-2 text-sm text-text-muted">
         Published skills appear at{" "}
         <code className="font-mono text-text-secondary">
-          skills.agenticros.com/&lt;github-handle&gt;/&lt;skill-id&gt;
+          skills.corebrum.com/&lt;github-handle&gt;/&lt;skill-id&gt;
         </code>
         .
       </p>
@@ -109,7 +109,7 @@ export default function Submit() {
           <input
             type="url"
             required
-            placeholder="https://github.com/agenticros/agenticros-skill-followme"
+            placeholder="https://github.com/Corebrum/corebrum-skill-followme"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             className="mt-2 w-full rounded-lg border border-[var(--border-subtle)] bg-bg-surface px-4 py-3 text-text-primary outline-none transition focus:border-coral-bright"
@@ -151,13 +151,13 @@ export default function Submit() {
         <div className="markdown mt-3 text-sm">
           <pre>
             <code>{`{
-  "name": "agenticros-skill-<id>",
+  "name": "corebrum-skill-<id>",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/<you>/<repo>.git"
   },
-  "agenticros": {
+  "synapse": {
     "id": "<id>",
     "displayName": "Your Skill",
     "description": "One-sentence summary.",
@@ -168,14 +168,14 @@ export default function Submit() {
     ]
   },
   "dependencies": {
-    "@agenticros/core": "^0.5.0"
+    "@corebrum/core": "^0.5.0"
   }
 }`}</code>
           </pre>
           <p>
             See{" "}
             <a
-              href="https://github.com/agenticros/agenticros/blob/main/docs/skills.md"
+              href="https://github.com/Corebrum/corebrum-synapse/blob/main/docs/skills.md"
               target="_blank"
               rel="noreferrer"
             >

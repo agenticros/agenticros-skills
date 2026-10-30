@@ -1,8 +1,8 @@
 {
-  "name": "agenticros-skills-functions",
+  "name": "corebrum-skills-functions",
   "private": true,
   "version": "0.1.0",
-  "description": "Cloud Functions for the AgenticROS Skills marketplace.",
+  "description": "Cloud Functions for the Corebrum Skills marketplace.",
   "main": "lib/index.js",
   "engines": {
     "node": "22"

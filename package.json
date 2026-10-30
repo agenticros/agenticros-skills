@@ -1,9 +1,9 @@
 {
-  "name": "agenticros-skills",
+  "name": "corebrum-skills",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "AgenticROS Skills marketplace — discover, submit, and install skills for your agentic robot",
+  "description": "Corebrum Skills marketplace — discover, submit, and install skills for your agentic robot",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

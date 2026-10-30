@@ -23,12 +23,12 @@ export default function Login() {
       <div className="rounded-2xl border border-[var(--border-subtle)] p-8 text-center"
         style={{ background: "var(--surface-card)" }}>
         <img
-          src="/agenticros-logo-only-removebg-preview.png"
-          alt="AgenticROS"
+          src="/corebrum-logo.png"
+          alt="Corebrum Synapse"
           className="mx-auto h-16 w-16"
         />
         <h1 className="mt-4 font-display text-2xl font-semibold text-text-primary">
-          Sign in to AgenticROS Skills
+          Sign in to Corebrum Skills
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
           We use GitHub to verify you own the repos you submit. No email or password

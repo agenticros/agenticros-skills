@@ -6,7 +6,7 @@
  *   Admin SDK.
  * - The public REST `api` function (read-only list/search/install) is
  *   reachable both directly (Cloud Functions URL) and at
- *   `https://skills.agenticros.com/api/**` via Firebase Hosting rewrite.
+ *   `https://skills.corebrum.com/api/**` via Firebase Hosting rewrite.
  */
 import { httpsCallable } from "firebase/functions";
 import { functions } from "./firebase";

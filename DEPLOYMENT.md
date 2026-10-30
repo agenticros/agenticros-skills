@@ -1,6 +1,9 @@
-# Deploying the AgenticROS Skills Marketplace
+# Deploying the Corebrum Skills Marketplace
 
-This is a one-time setup guide for the owner of the `agenticros` Firebase project. The marketplace is split into three pieces and one external dependency:
+This project was previously known as AgenticROS Skills.
+
+
+This is a one-time setup guide for the owner of the `synapse` Firebase project. The marketplace is split into three pieces and one external dependency:
 
 - **Hosting** — Vite-built React SPA served from Firebase Hosting site `agenticros-skills`
 - **Functions** — Node 22 Cloud Functions (`api`, `submitSkill`, `updateSkill`, `deleteSkill`, `refreshSkillMetadata`, `starSkill`, `unstarSkill`, `onUserCreate`)
@@ -18,19 +21,19 @@ These must be done in the [Firebase Console](https://console.firebase.google.com
 5. **Add the marketplace site's domains to Firebase Auth's authorized domains list.** Build → Authentication → Settings → Authorized domains → Add domain. Add all three of these, one at a time:
    - `agenticros-skills.web.app`
    - `agenticros-skills.firebaseapp.com`
-   - `skills.agenticros.com` (add now even before DNS exists; Firebase accepts it and routes traffic the moment the custom-domain registration in step 6 completes)
+   - `skills.corebrum.com` (add now even before DNS exists; Firebase accepts it and routes traffic the moment the custom-domain registration in step 6 completes)
    
    Firebase only auto-adds the project's *default* Hosting site domains (`agenticros.web.app`, `agenticros.firebaseapp.com`, plus `localhost`) to this list. Any *additional* Hosting site you create — like `agenticros-skills` — needs its domains added manually, otherwise sign-in from those domains fails with `Firebase: Error (auth/unauthorized-domain)` even with the GitHub provider correctly configured. **Do not remove** the default entries — the OAuth callback at `agenticros.firebaseapp.com/__/auth/handler` depends on `agenticros.firebaseapp.com` staying allowlisted.
-6. **Connect the custom domain** `skills.agenticros.com` to the `agenticros-skills` Hosting site. Build → Hosting → click into the **`agenticros-skills`** site (*not* the default `agenticros` one) → **Add custom domain** → `skills.agenticros.com`. Firebase will then display the specific DNS records you must add at your DNS provider — typically a TXT record for ownership verification plus two A records pointing at Firebase's anycast IPs (sometimes a CNAME instead, but with a Firebase-chosen target). Add those records as displayed and wait for the cert to provision (usually 10–60 min, sometimes faster). ⚠️ **Don't try to shortcut this with a manual CNAME → `agenticros-skills.web.app` or `agenticros.web.app`.** Without the Console registration step Firebase has no idea which Hosting site should answer for the hostname, won't provision a cert, and won't route traffic — DNS alone is not enough.
+6. **Connect the custom domain** `skills.corebrum.com` to the `agenticros-skills` Hosting site. Build → Hosting → click into the **`agenticros-skills`** site (*not* the default `agenticros` one) → **Add custom domain** → `skills.corebrum.com`. Firebase will then display the specific DNS records you must add at your DNS provider — typically a TXT record for ownership verification plus two A records pointing at Firebase's anycast IPs (sometimes a CNAME instead, but with a Firebase-chosen target). Add those records as displayed and wait for the cert to provision (usually 10–60 min, sometimes faster). ⚠️ **Don't try to shortcut this with a manual CNAME → `agenticros-skills.web.app` or `agenticros.web.app`.** Without the Console registration step Firebase has no idea which Hosting site should answer for the hostname, won't provision a cert, and won't route traffic — DNS alone is not enough.
 
 ## 2. GitHub OAuth App
 
-1. Visit https://github.com/settings/developers → New OAuth App (or, if you publish under the `agenticros` org, do this from https://github.com/organizations/agenticros/settings/applications instead).
+1. Visit https://github.com/settings/developers → New OAuth App (or, if you publish under the `synapse` org, do this from https://github.com/organizations/synapse/settings/applications instead).
 2. Fill in:
-   - **Application name**: `AgenticROS Skills`
-   - **Homepage URL**: `https://skills.agenticros.com`
-   - **Application description**: `Marketplace for AgenticROS robot skills.`
-   - **Authorization callback URL**: `https://agenticros.firebaseapp.com/__/auth/handler` (the Firebase-supplied handler under your project's auth domain — do **not** point this at `skills.agenticros.com`).
+   - **Application name**: `Corebrum Skills`
+   - **Homepage URL**: `https://skills.corebrum.com`
+   - **Application description**: `Marketplace for Corebrum Synapse robot skills.`
+   - **Authorization callback URL**: `https://agenticros.firebaseapp.com/__/auth/handler` (the Firebase-supplied handler under your project's auth domain — do **not** point this at `skills.corebrum.com`).
 3. Click **Register application**. On the next page generate a new **client secret**. GitHub displays the *full* secret value **only once** — the moment immediately after you click Generate. After you navigate away or refresh, only the last few characters are ever shown again, and the existing-secret Delete button is greyed out (`You cannot delete the only client secret. Generate a new client secret first.`). So before doing anything else: click the 📋 copy icon next to the new secret and paste it into your password manager.
 4. Paste both Client ID and Client Secret into Firebase Console → Authentication → Sign-in method → GitHub. **Use the 📋 copy icons next to each field on the GitHub OAuth App page** rather than re-typing — both values contain characters that look identical in most fonts (`0`/`O`, `1`/`l`/`I`) and a single-character mismatch on the Client ID causes GitHub to return a vague 404 on the OAuth authorize endpoint instead of a useful error.
 
@@ -52,12 +55,12 @@ firebase deploy
 
 You should see four URLs printed:
 
-- Hosting site: `https://agenticros-skills.web.app` (and after DNS propagates, `https://skills.agenticros.com`)
-- Functions: `https://us-central1-agenticros.cloudfunctions.net/api/health` etc.
+- Hosting site: `https://corebrum-skills.web.app` (and after DNS propagates, `https://skills.corebrum.com`)
+- Functions: `https://us-central1-synapse.cloudfunctions.net/api/health` etc.
 - Firestore rules + indexes deployed
 - Auth trigger `onUserCreate` deployed
 
-Hit `https://skills.agenticros.com/api/health` to confirm the rewrite + function are wired correctly. It should return `{"ok": true}`.
+Hit `https://skills.corebrum.com/api/health` to confirm the rewrite + function are wired correctly. It should return `{"ok": true}`.
 
 ## 4. Local development
 
@@ -76,7 +79,7 @@ The repo ships a GitHub Actions workflow at [`.github/workflows/deploy.yml`](./.
 
 ### 5.1 Create the GitHub repo secret
 
-1. In Firebase Console → ⚙️ Project Settings → **Service accounts** tab → click **Generate new private key**, confirm. A JSON file downloads (filename like `agenticros-firebase-adminsdk-XXXXX-XXXXXX.json`).
+1. In Firebase Console → ⚙️ Project Settings → **Service accounts** tab → click **Generate new private key**, confirm. A JSON file downloads (filename like `synapse-firebase-adminsdk-XXXXX-XXXXXX.json`).
 2. In GitHub: repo Settings → Secrets and variables → Actions → **New repository secret**. Name it exactly `FIREBASE_SERVICE_ACCOUNT_AGENTICROS`, paste the entire JSON contents (from `{` to `}`) into the Value field, save.
 3. **Securely delete the downloaded JSON file** once it's saved as a secret. Anyone with that file can deploy to your project and read/write Firestore. If it leaks, rotate it under Firebase Console → Service accounts → Manage service-account permissions → delete the key.
 
@@ -85,9 +88,9 @@ The repo ships a GitHub Actions workflow at [`.github/workflows/deploy.yml`](./.
 The downloaded key represents the project's default Firebase Admin SDK service account (`firebase-adminsdk-<id>@<project>.iam.gserviceaccount.com`). It has Firebase-SDK-level permissions out of the box but **not** the Cloud-level permissions needed to deploy Functions, push Firestore rules, etc. You need to grant two things:
 
 1. **Project-level role `Editor` (`roles/editor`)** — covers Hosting deploy, Functions v2 deploy, Cloud Build, Cloud Run, Artifact Registry, Firestore rules, Firestore indexes, and Service Usage in one grant. This is what Firebase's own `firebase init hosting:github` flow grants its CI service accounts by default.
-   - In **Cloud Console → IAM** ([direct link](https://console.cloud.google.com/iam-admin/iam?project=agenticros)), find the `firebase-adminsdk-<id>@agenticros.iam.gserviceaccount.com` row → pencil icon → **Add another role** → search for `Editor` → save. Be careful to pick **Basic → Editor** (`roles/editor`), not "Service Account Editor" or similar.
-2. **`Service Account User` (`roles/iam.serviceAccountUser`) on the App Engine default service account** (`agenticros@appspot.gserviceaccount.com`) — Functions v2 runs under the App Engine SA's identity, so the deploy SA needs `iam.serviceAccounts.actAs` on it.
-   - In **Cloud Console → IAM & Admin → Service Accounts** ([direct link](https://console.cloud.google.com/iam-admin/serviceaccounts?project=agenticros)), click into **`agenticros@appspot.gserviceaccount.com`** → **Permissions** tab → **Grant access** → New principal: `firebase-adminsdk-<id>@agenticros.iam.gserviceaccount.com`, Role: **Service Account User** (be very careful here: "Service Account User" and "Service Account Admin" appear next to each other in the picker and are completely different — Admin does *not* grant `actAs`). Save.
+   - In **Cloud Console → IAM** ([direct link](https://console.cloud.google.com/iam-admin/iam?project=synapse)), find the `firebase-adminsdk-<id>@synapse.iam.gserviceaccount.com` row → pencil icon → **Add another role** → search for `Editor` → save. Be careful to pick **Basic → Editor** (`roles/editor`), not "Service Account Editor" or similar.
+2. **`Service Account User` (`roles/iam.serviceAccountUser`) on the App Engine default service account** (`synapse@appspot.gserviceaccount.com`) — Functions v2 runs under the App Engine SA's identity, so the deploy SA needs `iam.serviceAccounts.actAs` on it.
+   - In **Cloud Console → IAM & Admin → Service Accounts** ([direct link](https://console.cloud.google.com/iam-admin/serviceaccounts?project=synapse)), click into **`synapse@appspot.gserviceaccount.com`** → **Permissions** tab → **Grant access** → New principal: `firebase-adminsdk-<id>@synapse.iam.gserviceaccount.com`, Role: **Service Account User** (be very careful here: "Service Account User" and "Service Account Admin" appear next to each other in the picker and are completely different — Admin does *not* grant `actAs`). Save.
 
 If you'd rather lock down permissions instead of granting `Editor`, the minimum-privilege equivalent is: `roles/firebasehosting.admin` + `roles/cloudfunctions.admin` + `roles/run.admin` + `roles/artifactregistry.admin` + `roles/cloudbuild.builds.editor` + `roles/firebaserules.admin` + `roles/datastore.indexAdmin` + `roles/serviceusage.serviceUsageConsumer`, plus the same `roles/iam.serviceAccountUser` on the App Engine SA.
 
@@ -95,7 +98,7 @@ If you'd rather lock down permissions instead of granting `Editor`, the minimum-
 
 Firebase verifies the project is on Blaze before deploying Functions, and that check goes through `cloudbilling.googleapis.com`. Enable it once:
 
-- In **Cloud Console → APIs & Services → Library** ([direct link](https://console.cloud.google.com/apis/library/cloudbilling.googleapis.com?project=agenticros)) → **Enable**. Takes a few seconds; no further config needed.
+- In **Cloud Console → APIs & Services → Library** ([direct link](https://console.cloud.google.com/apis/library/cloudbilling.googleapis.com?project=synapse)) → **Enable**. Takes a few seconds; no further config needed.
 
 > Note: a local `firebase deploy` from your dev machine works without this API because user-account credentials bypass the billing pre-check. The service-account-based CI deploy doesn't, which is why this is easy to miss.
 
@@ -104,24 +107,24 @@ Firebase verifies the project is on Blaze before deploying Functions, and that c
 1. Installs SPA + Functions deps (`npm ci`).
 2. Type-checks both.
 3. Builds the SPA (`vite build`) and Functions (`tsc`).
-4. Runs `firebase deploy --only hosting,functions,firestore:rules,firestore:indexes` against the `agenticros` project using the service-account key from the GitHub secret.
+4. Runs `firebase deploy --only hosting,functions,firestore:rules,firestore:indexes` against the `synapse` project using the service-account key from the GitHub secret.
 
-A successful run takes ~2–3 minutes. Watch live progress at the [Actions tab](https://github.com/agenticros/agenticros-skills/actions/workflows/deploy.yml).
+A successful run takes ~2–3 minutes. Watch live progress at the [Actions tab](https://github.com/Corebrum/corebrum-skills/actions/workflows/deploy.yml).
 
 ## 6. Seeding the marketplace
 
 After the first deploy the marketplace is empty. To launch non-empty, submit the two reference skills as the maintainer:
 
-1. **Publish `@agenticros/core` to npm** (one-time): `cd packages/core && npm publish` in the `agenticros` repo. The seed skills depend on `@agenticros/core@^0.5.0`, so users can't install them until this is on the registry.
-2. **Sign in at `https://skills.agenticros.com/login`** with the GitHub account that owns `agenticros/agenticros-skill-followme` and `agenticros/agenticros-skill-find` (e.g. PlaiPin, or any org admin).
+1. **Publish `@corebrum/core` to npm** (one-time): `cd packages/core && npm publish` in the `synapse` repo. The seed skills depend on `@corebrum/core@^0.5.0`, so users can't install them until this is on the registry.
+2. **Sign in at `https://skills.corebrum.com/login`** with the GitHub account that owns `synapse/corebrum-skill-followme` and `synapse/corebrum-skill-find` (e.g. PlaiPin, or any org admin).
 3. **Open `/submit`** and paste:
-   - `https://github.com/agenticros/agenticros-skill-followme`
-   - `https://github.com/agenticros/agenticros-skill-find`
+   - `https://github.com/Corebrum/corebrum-skill-followme`
+   - `https://github.com/Corebrum/corebrum-skill-find`
    For each one, the `submitSkill` Function verifies you have push access on the repo, pulls the `package.json` + README, and publishes the listing.
 4. **Sanity check the install flow** locally:
    ```bash
-   AGENTICROS_SKILLS_API=https://skills.agenticros.com/api npx agenticros skills search follow
-   AGENTICROS_SKILLS_API=https://skills.agenticros.com/api npx agenticros skills install chrismatthieu/followme
+   SYNAPSE_SKILLS_API=https://skills.corebrum.com/api npx @corebrum/synapse skills search follow
+   SYNAPSE_SKILLS_API=https://skills.corebrum.com/api npx @corebrum/synapse skills install chrismatthieu/followme
    ```
    (The env var is only needed if you want to point at a non-default marketplace. Production users don't set it.)
 

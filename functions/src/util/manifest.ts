@@ -1,7 +1,7 @@
 import { isValidSlug } from "./slug";
 
-/** Schema for the `agenticros` block in a skill's package.json. */
-export interface AgenticROSBlock {
+/** Schema for the `synapse` block in a skill's package.json. */
+export interface SynapseBlock {
   id: string;
   displayName?: string;
   description?: string;
@@ -36,14 +36,14 @@ export interface SkillManifest {
   keywords?: string[];
   repository?: string | { url?: string };
   dependencies?: Record<string, string>;
-  agenticros?: AgenticROSBlock;
+  synapse?: SynapseBlock;
   /** Old contract — surfaced as a warning so submitters know to migrate. */
-  agenticrosSkill?: unknown;
+  synapseSkill?: unknown;
 }
 
 export interface ValidatedManifest {
   manifest: SkillManifest;
-  block: AgenticROSBlock;
+  block: SynapseBlock;
   warnings: string[];
 }
 
@@ -54,7 +54,7 @@ export class ManifestError extends Error {
   }
 }
 
-/** Frozen hardware feature names from AgenticROS robot profiles. Warn-only. */
+/** Frozen hardware feature names from Corebrum Synapse robot profiles. Warn-only. */
 const FEATURE_VOCABULARY = new Set([
   "base",
   "arm",
@@ -72,7 +72,7 @@ const FEATURE_VOCABULARY = new Set([
 
 /**
  * Validate a parsed package.json conforms to the simplified
- * AgenticROS skill contract (the `agenticros` block).
+ * Corebrum Synapse skill contract (the `synapse` block).
  */
 export function validateManifest(raw: unknown): ValidatedManifest {
   if (!raw || typeof raw !== "object") {
@@ -91,38 +91,38 @@ export function validateManifest(raw: unknown): ValidatedManifest {
       "package.json must declare a `main` entry (e.g. `dist/index.js`).",
     );
   }
-  if (!m.agenticros || typeof m.agenticros !== "object") {
+  if (!m.synapse || typeof m.synapse !== "object") {
     throw new ManifestError(
-      "package.json must declare an `agenticros` block. " +
-        "See https://skills.agenticros.com/docs for the schema.",
+      "package.json must declare a `synapse` block. " +
+        "See https://skills.corebrum.com/docs for the schema.",
     );
   }
-  const block = m.agenticros;
+  const block = m.synapse;
   if (!block.id || typeof block.id !== "string" || !isValidSlug(block.id)) {
     throw new ManifestError(
-      "`agenticros.id` is required and must be a kebab-case slug " +
+      "`synapse.id` is required and must be a kebab-case slug " +
         "(2-64 chars, [a-z0-9-]).",
     );
   }
 
   const warnings: string[] = [];
-  if (m.agenticrosSkill !== undefined) {
+  if (m.synapseSkill !== undefined) {
     warnings.push(
-      "The legacy `agenticrosSkill` field is deprecated. Move metadata into the `agenticros` block.",
+      "The legacy `synapseSkill` field is deprecated. Move metadata into the `synapse` block.",
     );
   }
-  const coreDep = m.dependencies?.["@agenticros/core"];
+  const coreDep = m.dependencies?.["@corebrum/core"];
   if (coreDep?.startsWith("file:")) {
     warnings.push(
-      "`@agenticros/core` is declared as a `file:` path. This skill will not install for anyone other than the maintainer until it points at a published version (e.g. `^0.5.0`).",
+      "`@corebrum/core` is declared as a `file:` path. This skill will not install for anyone other than the maintainer until it points at a published version (e.g. `^0.5.0`).",
     );
   }
   if (!block.description && !m.description) {
-    warnings.push("Add a one-sentence `description` (top-level or in `agenticros`).");
+    warnings.push("Add a one-sentence `description` (top-level or in `synapse`).");
   }
   if (!block.capabilities || block.capabilities.length === 0) {
     warnings.push(
-      "Declare at least one capability in `agenticros.capabilities` so the agent planner can reason about your skill.",
+      "Declare at least one capability in `synapse.capabilities` so the agent planner can reason about your skill.",
     );
   } else {
     for (const cap of block.capabilities) {
@@ -138,7 +138,7 @@ export function validateManifest(raw: unknown): ValidatedManifest {
   }
   if (!block.screenshots || block.screenshots.length === 0) {
     warnings.push(
-      "Add at least one entry to `agenticros.screenshots` (a path inside your repo) so the marketplace card has a preview image.",
+      "Add at least one entry to `synapse.screenshots` (a path inside your repo) so the marketplace card has a preview image.",
     );
   }
 

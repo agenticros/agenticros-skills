@@ -11,16 +11,16 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-5">
           <div className="col-span-2">
-            <Link to="/" className="flex h-10 max-w-60 items-center gap-2" aria-label="AgenticROS Skills home">
+            <Link to="/" className="flex h-10 max-w-60 items-center gap-2" aria-label="Corebrum Skills home">
               <img
-                src="/agenticros-a.png"
+                src="/corebrum-icon.png"
                 alt=""
                 aria-hidden="true"
                 className="h-10 w-10 object-cover object-center"
               />
               <img
-                src="/agenticros-text-only-white.png"
-                alt="AgenticROS"
+                src="/corebrum-logo.png"
+                alt="Corebrum Synapse"
                 className="h-5 min-w-0 flex-1 object-contain object-left"
               />
               <span className="shrink-0 text-sm font-semibold text-coral-bright">
@@ -31,7 +31,7 @@ export default function Footer() {
               Discover, create, publish, and install skills for your agentic robot.
               Use{" "}
               <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
-                npx agenticros create-skill
+                npx @corebrum/synapse create-skill
               </code>{" "}
               to scaffold, or browse community packages with namespaced{" "}
               <code className="font-mono text-text-secondary">owner/skill-id</code>{" "}
@@ -62,12 +62,12 @@ export default function Footer() {
           </div>
           <div>
             <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-text-primary">
-              AgenticROS
+              Corebrum Synapse
             </h4>
             <ul className="mt-3 space-y-2 text-sm text-text-secondary">
               <li>
                 <a
-                  href="https://agenticros.com"
+                  href="https://corebrum.com/synapse"
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-text-primary"
@@ -77,7 +77,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/agenticros/agenticros"
+                  href="https://github.com/Corebrum/corebrum-synapse"
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-text-primary"
@@ -87,7 +87,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/agenticros/agenticros/blob/main/docs/skills.md"
+                  href="https://github.com/Corebrum/corebrum-synapse/blob/main/docs/skills.md"
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-text-primary"
@@ -118,7 +118,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-10 flex flex-col items-start gap-2 border-t border-[var(--border-subtle)] pt-6 text-xs text-text-muted md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} AgenticROS. Apache-2.0 licensed.</p>
+          <p>© {new Date().getFullYear()} Corebrum Synapse. Apache-2.0 licensed.</p>
         </div>
       </div>
     </footer>

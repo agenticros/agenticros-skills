@@ -10,7 +10,7 @@
  * Tokens are cleared on tab close. If a user opens the Submit page in a
  * fresh tab we re-prompt them to sign in (which produces a new token).
  */
-const KEY = "agenticros:github-access-token";
+const KEY = "synapse:github-access-token";
 
 export function setGithubAccessToken(token: string | null): void {
   if (typeof window === "undefined") return;

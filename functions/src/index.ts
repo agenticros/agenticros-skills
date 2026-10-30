@@ -1,5 +1,5 @@
 /**
- * Cloud Functions entry point for the AgenticROS Skills marketplace.
+ * Cloud Functions entry point for the Corebrum Skills marketplace.
  *
  * Exports:
  *   - api                 — public REST endpoints (browse / search / install)

@@ -2,14 +2,14 @@ import { useState } from "react";
 
 interface Props {
   marketplaceRef: string;
-  /** Optional scoped npm package name, e.g. @agenticros/navigate-to */
+  /** Optional scoped npm package name, e.g. @corebrum/navigate-to */
   npmPackage?: string;
 }
 
 export default function InstallCommand({ marketplaceRef, npmPackage }: Props) {
-  const cliCmd = `npx agenticros skills install ${marketplaceRef}`;
+  const cliCmd = `npx @corebrum/synapse skills install ${marketplaceRef}`;
   const npmCmd = npmPackage
-    ? `npx agenticros skills install ${npmPackage}`
+    ? `npx @corebrum/synapse skills install ${npmPackage}`
     : null;
   const [copied, setCopied] = useState<"cli" | "npm" | null>(null);
 

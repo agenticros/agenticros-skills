@@ -53,15 +53,15 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
           <div className="flex w-full max-w-[21rem] flex-col items-center md:max-w-[30rem]">
             <img
-              src="/agenticros-a.png"
+              src="/corebrum-icon.png"
               alt=""
               aria-hidden="true"
               className="w-36 object-contain md:w-44"
             />
             <div className="mt-2 h-11 w-full overflow-hidden md:h-12">
               <img
-                src="/agenticros-text-removebg-preview.png"
-                alt="AgenticROS"
+                src="/corebrum-logo.png"
+                alt="Corebrum Synapse"
                 className="h-full w-full object-cover object-center"
               />
             </div>
@@ -72,10 +72,10 @@ export default function Home() {
           <p className="max-w-2xl text-lg text-text-secondary md:text-xl">
             Discover, install, and share community-built skills that extend{" "}
             <a
-              href="https://agenticros.com"
+              href="https://corebrum.com/synapse"
               className="text-cyan-bright hover:underline"
             >
-              AgenticROS
+              Corebrum Synapse
             </a>{" "}
             with new tools the AI agent can call — follow a person, find an object,
             navigate to a waypoint, and more.
@@ -152,9 +152,9 @@ export default function Home() {
             ⟩ Third-party Agent Skills
           </h2>
           <p className="mt-2 text-sm text-text-secondary">
-            This marketplace lists AgenticROS robot skills you install with{" "}
+            This marketplace lists Corebrum Synapse robot skills you install with{" "}
             <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
-              npx agenticros skills install
+              npx @corebrum/synapse skills install
             </code>
             . Official Agent Skills catalogs (SKILL.md) live upstream — we link
             to them, we do not index them here.
@@ -188,7 +188,7 @@ export default function Home() {
             Built a skill? Share it.
           </h2>
           <p className="max-w-2xl text-text-secondary">
-            Scaffold, test locally, and publish with the AgenticROS CLI — or submit
+            Scaffold, test locally, and publish with the Corebrum Synapse CLI — or submit
             your GitHub repo here. Published skills use namespaced refs{" "}
             <code className="rounded bg-bg-elevated px-1 py-0.5 font-mono text-coral-bright">
               your-handle/skill-id
@@ -199,9 +199,9 @@ export default function Home() {
             className="mt-2 w-full max-w-xl overflow-x-auto rounded-lg border border-[var(--border-subtle)] p-4 text-left font-mono text-sm text-text-primary"
             style={{ background: "var(--surface-inset-highlight)" }}
           >
-            <code>{`npx agenticros create-skill my-skill
-cd agenticros-skill-my-skill && npm install && npm run dev
-npx agenticros publish`}</code>
+            <code>{`npx @corebrum/synapse create-skill my-skill
+cd corebrum-skill-my-skill && npm install && npm run dev
+npx @corebrum/synapse publish`}</code>
           </pre>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -211,7 +211,7 @@ npx agenticros publish`}</code>
               Submit via web
             </Link>
             <a
-              href="https://github.com/agenticros/agenticros/blob/main/docs/skills.md"
+              href="https://github.com/Corebrum/corebrum-synapse/blob/main/docs/skills.md"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center rounded-lg border border-[var(--border-subtle)] px-6 py-3 text-base font-medium text-text-primary transition hover:bg-bg-elevated"

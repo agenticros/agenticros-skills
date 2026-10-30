@@ -2,7 +2,7 @@
 /**
  * One-time migration: flat skill slugs → namespaced owner/skill docs.
  *
- * Usage (from agenticros-skills/functions):
+ * Usage (from corebrum-skills/functions):
  *   GOOGLE_APPLICATION_CREDENTIALS=... node scripts/migrate-namespaced-slugs.mjs
  */
 import { initializeApp, cert, getApps } from "firebase-admin/app";
@@ -20,7 +20,7 @@ if (getApps().length === 0) {
 
 const db = getFirestore();
 
-const OFFICIAL_OWNER = "agenticros";
+const OFFICIAL_OWNER = "synapse";
 
 function docId(owner, skillSlug) {
   return `${owner}__${skillSlug}`;

@@ -3,7 +3,7 @@
  * Upsert chrismatthieu seed skills into Firestore as public listings.
  * Bypasses the 2-new-listings / 24h submit rate limit.
  *
- * Usage (from agenticros-skills/functions):
+ * Usage (from corebrum-skills/functions):
  *   GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa.json node scripts/seed-chrismatthieu-skills.mjs
  *
  * Or with Application Default Credentials:
@@ -30,15 +30,15 @@ const OWNER = "chrismatthieu";
 
 /** @type {Array<{ skillSlug: string, githubRepo: string, npmPackage: string, npmVersion: string }>} */
 const SEEDS = [
-  { skillSlug: "followme", githubRepo: "agenticros/agenticros-skill-followme", npmPackage: "@agenticros/followme", npmVersion: "0.2.0" },
-  { skillSlug: "find", githubRepo: "agenticros/agenticros-skill-find", npmPackage: "@agenticros/find", npmVersion: "0.2.0" },
-  { skillSlug: "detect-humans", githubRepo: "agenticros/agenticros-skill-detect-humans", npmPackage: "@agenticros/detect-humans", npmVersion: "0.1.0" },
-  { skillSlug: "start-slam", githubRepo: "agenticros/agenticros-skill-start-slam", npmPackage: "@agenticros/start-slam", npmVersion: "0.1.2" },
-  { skillSlug: "navigate-to", githubRepo: "agenticros/agenticros-skill-navigate-to", npmPackage: "@agenticros/navigate-to", npmVersion: "0.1.0" },
-  { skillSlug: "follow-me-ros", githubRepo: "agenticros/agenticros-skill-follow-me-ros", npmPackage: "@agenticros/follow-me-ros", npmVersion: "0.1.1" },
-  { skillSlug: "navigate-through-poses", githubRepo: "agenticros/agenticros-skill-navigate-through-poses", npmPackage: "@agenticros/navigate-through-poses", npmVersion: "0.1.0" },
-  { skillSlug: "moveit-pick", githubRepo: "agenticros/agenticros-skill-moveit-pick", npmPackage: "@agenticros/moveit-pick", npmVersion: "0.1.0" },
-  { skillSlug: "dock-to-charger", githubRepo: "agenticros/agenticros-skill-dock-to-charger", npmPackage: "@agenticros/dock-to-charger", npmVersion: "0.1.0" },
+  { skillSlug: "followme", githubRepo: "synapse/corebrum-skill-followme", npmPackage: "@corebrum/followme", npmVersion: "0.2.0" },
+  { skillSlug: "find", githubRepo: "synapse/corebrum-skill-find", npmPackage: "@corebrum/find", npmVersion: "0.2.0" },
+  { skillSlug: "detect-humans", githubRepo: "synapse/corebrum-skill-detect-humans", npmPackage: "@corebrum/detect-humans", npmVersion: "0.1.0" },
+  { skillSlug: "start-slam", githubRepo: "synapse/corebrum-skill-start-slam", npmPackage: "@corebrum/start-slam", npmVersion: "0.1.2" },
+  { skillSlug: "navigate-to", githubRepo: "synapse/corebrum-skill-navigate-to", npmPackage: "@corebrum/navigate-to", npmVersion: "0.1.0" },
+  { skillSlug: "follow-me-ros", githubRepo: "synapse/corebrum-skill-follow-me-ros", npmPackage: "@corebrum/follow-me-ros", npmVersion: "0.1.1" },
+  { skillSlug: "navigate-through-poses", githubRepo: "synapse/corebrum-skill-navigate-through-poses", npmPackage: "@corebrum/navigate-through-poses", npmVersion: "0.1.0" },
+  { skillSlug: "moveit-pick", githubRepo: "synapse/corebrum-skill-moveit-pick", npmPackage: "@corebrum/moveit-pick", npmVersion: "0.1.0" },
+  { skillSlug: "dock-to-charger", githubRepo: "synapse/corebrum-skill-dock-to-charger", npmPackage: "@corebrum/dock-to-charger", npmVersion: "0.1.0" },
 ];
 
 async function fetchGithubJson(repo, path) {
@@ -58,7 +58,7 @@ async function fetchGithubText(repo, path) {
 async function upsertSeed(seed) {
   const pkg = await fetchGithubJson(seed.githubRepo, "package.json");
   const readme = await fetchGithubText(seed.githubRepo, "README.md");
-  const block = pkg.agenticros ?? {};
+  const block = pkg.synapse ?? {};
   const skillSlug = seed.skillSlug;
   const marketplaceRef = `${OWNER}/${skillSlug}`;
   const docId = `${OWNER}__${skillSlug}`;
