@@ -16,17 +16,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] bg-bg-deep/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link to="/" className="flex h-10 w-60 items-center gap-2" aria-label="Corebrum Skills home">
-          <img
-            src="/corebrum-icon.png"
-            alt=""
-            aria-hidden="true"
-            className="h-10 w-10 object-cover object-center"
-          />
+        <Link to="/" className="flex h-10 items-center gap-2" aria-label="Corebrum Skills home">
           <img
             src="/corebrum-logo.png"
-            alt="Corebrum Synapse"
-            className="h-5 min-w-0 flex-1 object-contain object-left"
+            alt="Corebrum"
+            className="h-8 w-auto object-contain"
           />
           <span className="shrink-0 text-sm font-semibold text-coral-bright">
             Skills

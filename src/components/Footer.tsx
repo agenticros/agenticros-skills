@@ -11,17 +11,11 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-5">
           <div className="col-span-2">
-            <Link to="/" className="flex h-10 max-w-60 items-center gap-2" aria-label="Corebrum Skills home">
-              <img
-                src="/corebrum-icon.png"
-                alt=""
-                aria-hidden="true"
-                className="h-10 w-10 object-cover object-center"
-              />
+            <Link to="/" className="flex h-10 items-center gap-2" aria-label="Corebrum Skills home">
               <img
                 src="/corebrum-logo.png"
-                alt="Corebrum Synapse"
-                className="h-5 min-w-0 flex-1 object-contain object-left"
+                alt="Corebrum"
+                className="h-8 w-auto object-contain"
               />
               <span className="shrink-0 text-sm font-semibold text-coral-bright">
                 Skills
